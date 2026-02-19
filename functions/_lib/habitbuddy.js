@@ -884,6 +884,15 @@ function normalizeSessionPhone(session) {
   );
 }
 
+function getOpportunityContactId(opportunity) {
+  return cleanText(
+    opportunity?.contactId ||
+      opportunity?.contact_id ||
+      opportunity?.contact?.id ||
+      opportunity?.contact?.contactId,
+  );
+}
+
 export async function processMainCheckoutCompleted(env, session) {
   const config = getConfig(env, { url: 'https://example.com' });
 
@@ -1008,25 +1017,31 @@ export async function processGiftCheckoutCompleted(env, session) {
     }
   }
 
+  const giftOpportunityPayload = {
+    pipelineId: config.pipelineId,
+    pipelineStageId: giftPlan.stageId,
+    status: 'open',
+    monetaryValue: resolvedAmount,
+    name: buildOpportunityName(recipientName || senderName || 'Gift', giftPlan.label),
+    customFields: listOpportunityCustomFields(config, {
+      giftingFlag: 'Yes',
+      recipientName,
+      recipientEmail,
+      recipientPhone,
+      gifterName: senderName,
+      gifterEmail: senderEmail,
+      wasGifted: 'Yes',
+    }),
+  };
+
   if (!opportunity) {
-    opportunity = await createOpportunity(env, {
-      locationId: config.locationId,
-      pipelineId: config.pipelineId,
-      pipelineStageId: giftPlan.stageId,
-      status: 'open',
+    opportunity = await upsertOpportunityAtStage(env, {
       contactId: recipientContact.id,
-      name: buildOpportunityName(recipientName || 'Recipient', giftPlan.label),
+      stageId: giftPlan.stageId,
+      name: giftOpportunityPayload.name,
       source: 'HabitBuddy Gift Checkout',
       monetaryValue: resolvedAmount,
-      customFields: listOpportunityCustomFields(config, {
-        giftingFlag: 'Yes',
-        recipientName,
-        recipientEmail,
-        recipientPhone,
-        gifterName: senderName,
-        gifterEmail: senderEmail,
-        wasGifted: 'Yes',
-      }),
+      customFields: giftOpportunityPayload.customFields,
     });
     opportunityId = opportunity.id;
   } else {
@@ -1049,22 +1064,50 @@ export async function processGiftCheckoutCompleted(env, session) {
       pipelineId: config.pipelineId,
     });
 
-    opportunity = await safeUpdateOpportunity(env, opportunity.id, {
-      pipelineId: config.pipelineId,
-      pipelineStageId: giftPlan.stageId,
-      status: 'open',
-      monetaryValue: resolvedAmount,
-      name: buildOpportunityName(recipientName || senderName || 'Gift', giftPlan.label),
-      customFields: listOpportunityCustomFields(config, {
-        giftingFlag: 'Yes',
-        recipientName,
-        recipientEmail,
-        recipientPhone,
-        gifterName: senderName,
-        gifterEmail: senderEmail,
-        wasGifted: 'Yes',
-      }),
-    });
+    // GHL may require direct contactId mutation on opportunity to switch ownership.
+    try {
+      opportunity = await safeUpdateOpportunity(env, opportunity.id, {
+        ...giftOpportunityPayload,
+        contactId: recipientContact.id,
+      });
+    } catch (error) {
+      console.warn('Opportunity contact reassignment via update failed:', error?.message || error);
+      opportunity = await safeUpdateOpportunity(env, opportunity.id, giftOpportunityPayload);
+    }
+
+    let assignedContactId = getOpportunityContactId(opportunity);
+    if (!assignedContactId) {
+      try {
+        const refreshed = await getOpportunity(env, opportunity.id);
+        if (refreshed) {
+          opportunity = refreshed;
+          assignedContactId = getOpportunityContactId(refreshed);
+        }
+      } catch (_error) {
+        assignedContactId = '';
+      }
+    }
+
+    if (assignedContactId && assignedContactId !== recipientContact.id) {
+      // If primary ownership cannot be mutated, move fulfillment tracking to a recipient-owned opportunity.
+      const recipientOpportunity = await upsertOpportunityAtStage(env, {
+        contactId: recipientContact.id,
+        stageId: giftPlan.stageId,
+        name: giftOpportunityPayload.name,
+        source: 'HabitBuddy Gift Checkout',
+        monetaryValue: resolvedAmount,
+        customFields: giftOpportunityPayload.customFields,
+      });
+
+      await safeUpdateOpportunity(env, opportunity.id, {
+        pipelineId: config.pipelineId,
+        status: 'abandoned',
+      });
+
+      opportunity = recipientOpportunity;
+    }
+
+    opportunityId = opportunity.id;
   }
 
   return {
