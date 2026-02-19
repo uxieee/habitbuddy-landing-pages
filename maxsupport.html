@@ -1651,6 +1651,10 @@
       try {
         setMainStatus(signupFormStatus, 'info', 'Confirming card details...');
         setSubmitBusy(mainConfirmBtn, 'Confirming card...');
+        const submitResult = await mainCheckoutState.elements.submit();
+        if (submitResult.error) {
+          throw new Error(submitResult.error.message || 'Please check your payment details and try again.');
+        }
         const confirmation = await mainCheckoutState.stripe.confirmSetup({
           elements: mainCheckoutState.elements,
           clientSecret: mainCheckoutState.clientSecret,

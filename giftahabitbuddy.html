@@ -998,6 +998,10 @@
 
         setGiftStatus(status, 'info', 'Confirming payment...');
         setGiftSubmitBusy(submitBtn, 'Processing payment...');
+        const submitResult = await giftCheckoutState.elements.submit();
+        if (submitResult.error) {
+          throw new Error(submitResult.error.message || 'Please check your payment details and try again.');
+        }
         const confirmation = await giftCheckoutState.stripe.confirmPayment({
           elements: giftCheckoutState.elements,
           clientSecret: giftCheckoutState.clientSecret,
