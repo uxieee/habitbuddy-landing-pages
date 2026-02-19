@@ -381,48 +381,25 @@
       color: #052A1C;
     }
     .form-step[hidden] { display: none; }
-    .form-summary {
-      margin-bottom: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-elevated);
-    }
-    .form-summary__title {
-      margin: 0 0 10px;
-      font-size: 11px;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-secondary);
-    }
-    .form-summary__grid {
+    .phone-input-group {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      align-items: stretch;
     }
-    .form-summary__item {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      min-height: 56px;
+    .phone-country {
+      font-size: 14px;
+      padding: 12px 10px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
-    .form-summary__label {
+    .phone-help {
       display: block;
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      font-weight: 700;
+      margin-top: 6px;
+      font-size: 11px;
       color: var(--text-muted);
-      margin-bottom: 5px;
-    }
-    .form-summary__value {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-primary);
-      line-height: 1.35;
-      word-break: break-word;
+      line-height: 1.4;
     }
     .form-actions {
       display: flex;
@@ -975,7 +952,8 @@
       .signup-form__title { font-size: 32px; }
       .form-stepper__item { font-size: 11px; padding: 8px; }
       .form-stepper__num { width: 18px; height: 18px; font-size: 10px; }
-      .form-summary__grid { grid-template-columns: 1fr; }
+      .phone-input-group { grid-template-columns: 104px 1fr; gap: 8px; }
+      .phone-country { padding: 11px 8px; }
       .form-actions { flex-direction: column-reverse; }
       .form-actions .btn-submit,
       .btn-back { width: 100%; }
@@ -1085,8 +1063,34 @@
                 <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email">
               </div>
               <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" required>
+                <label for="phoneLocal">Phone Number</label>
+                <div class="phone-input-group">
+                  <select id="phoneCountry" class="phone-country" aria-label="Country code">
+                    <option value="1">🇺🇸 +1</option>
+                    <option value="63" selected>🇵🇭 +63</option>
+                    <option value="44">🇬🇧 +44</option>
+                    <option value="61">🇦🇺 +61</option>
+                    <option value="64">🇳🇿 +64</option>
+                    <option value="65">🇸🇬 +65</option>
+                    <option value="66">🇹🇭 +66</option>
+                    <option value="60">🇲🇾 +60</option>
+                    <option value="971">🇦🇪 +971</option>
+                    <option value="81">🇯🇵 +81</option>
+                    <option value="82">🇰🇷 +82</option>
+                    <option value="49">🇩🇪 +49</option>
+                    <option value="33">🇫🇷 +33</option>
+                    <option value="39">🇮🇹 +39</option>
+                    <option value="34">🇪🇸 +34</option>
+                    <option value="31">🇳🇱 +31</option>
+                    <option value="91">🇮🇳 +91</option>
+                    <option value="55">🇧🇷 +55</option>
+                    <option value="52">🇲🇽 +52</option>
+                    <option value="27">🇿🇦 +27</option>
+                  </select>
+                  <input type="tel" id="phoneLocal" name="phone_local" placeholder="916 686 8518" autocomplete="tel-national" required>
+                </div>
+                <input type="hidden" id="phone" name="phone" value="">
+                <small class="phone-help">Use local number only. We add the country code automatically.</small>
               </div>
               <div class="form-group">
                 <label for="habit">What habit do you want to build?</label>
@@ -1119,27 +1123,6 @@
               </button>
             </div>
             <div class="form-step" id="mainFormStep2" hidden>
-              <div class="form-summary" id="mainFormSummary">
-                <p class="form-summary__title">You are about to start:</p>
-                <div class="form-summary__grid">
-                  <div class="form-summary__item">
-                    <span class="form-summary__label">Name</span>
-                    <span class="form-summary__value" id="summaryName">-</span>
-                  </div>
-                  <div class="form-summary__item">
-                    <span class="form-summary__label">Phone</span>
-                    <span class="form-summary__value" id="summaryPhone">-</span>
-                  </div>
-                  <div class="form-summary__item">
-                    <span class="form-summary__label">Habit</span>
-                    <span class="form-summary__value" id="summaryHabit">-</span>
-                  </div>
-                  <div class="form-summary__item">
-                    <span class="form-summary__label">Check-in time</span>
-                    <span class="form-summary__value" id="summaryTime">-</span>
-                  </div>
-                </div>
-              </div>
               <div class="payment-step" id="mainPaymentStep" hidden>
                 <p class="payment-step__label">Card details</p>
                 <div id="mainPaymentElement" class="stripe-element"></div>
@@ -1482,10 +1465,9 @@
     const mainContinueBtn = document.getElementById('mainContinueBtn');
     const mainBackBtn = document.getElementById('mainBackBtn');
     const mainConfirmBtn = document.getElementById('mainConfirmBtn');
-    const mainSummaryName = document.getElementById('summaryName');
-    const mainSummaryPhone = document.getElementById('summaryPhone');
-    const mainSummaryHabit = document.getElementById('summaryHabit');
-    const mainSummaryTime = document.getElementById('summaryTime');
+    const phoneCountry = document.getElementById('phoneCountry');
+    const phoneLocal = document.getElementById('phoneLocal');
+    const phoneHidden = document.getElementById('phone');
     const buttonIcon = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>';
     const continueStepButtonContent = `Continue to Secure Card ${buttonIcon}`;
     const confirmStepButtonContent = `Confirm Card &amp; Start Trial ${buttonIcon}`;
@@ -1528,18 +1510,51 @@
       mainStepIndicator2.classList.remove('is-complete');
     }
 
-    function getSelectLabel(selectId, value) {
-      const select = document.getElementById(selectId);
-      if (!select || !value) return '-';
-      const option = Array.from(select.options).find((entry) => entry.value === value);
-      return option ? option.textContent.replace(/\s+/g, ' ').trim() : value;
-    }
+    function normalizePhoneToE164() {
+      const dialCode = String(phoneCountry.value || '').replace(/\D/g, '');
+      let localDigits = String(phoneLocal.value || '').replace(/\D/g, '');
 
-    function populateMainSummary(payload) {
-      mainSummaryName.textContent = payload.first_name || '-';
-      mainSummaryPhone.textContent = payload.phone || '-';
-      mainSummaryHabit.textContent = getSelectLabel('habit', payload.habit_focus);
-      mainSummaryTime.textContent = getSelectLabel('time', payload.checkin_time);
+      if (!dialCode) {
+        phoneLocal.setCustomValidity('Select a country code.');
+        phoneHidden.value = '';
+        return '';
+      }
+
+      if (!localDigits) {
+        phoneLocal.setCustomValidity('');
+        phoneHidden.value = '';
+        return '';
+      }
+
+      if (localDigits.startsWith('00')) {
+        localDigits = localDigits.slice(2);
+      }
+
+      if (localDigits.startsWith(dialCode)) {
+        const normalizedDirect = `+${localDigits}`;
+        const directDigits = normalizedDirect.replace(/\D/g, '');
+        if (directDigits.length >= 8 && directDigits.length <= 15) {
+          phoneLocal.setCustomValidity('');
+          phoneHidden.value = normalizedDirect;
+          return normalizedDirect;
+        }
+      }
+
+      if (dialCode !== '1') {
+        localDigits = localDigits.replace(/^0+/, '');
+      }
+
+      const normalized = `+${dialCode}${localDigits}`;
+      const totalDigits = normalized.replace(/\D/g, '').length;
+      if (totalDigits < 8 || totalDigits > 15) {
+        phoneLocal.setCustomValidity('Enter a valid phone number.');
+        phoneHidden.value = '';
+        return '';
+      }
+
+      phoneLocal.setCustomValidity('');
+      phoneHidden.value = normalized;
+      return normalized;
     }
 
     async function initMainPaymentElement(payload) {
@@ -1600,7 +1615,9 @@
     }
 
     async function handleContinueToCard() {
+      const normalizedPhone = normalizePhoneToE164();
       if (!signupForm.reportValidity()) return;
+      if (!normalizedPhone) return;
       const payload = Object.fromEntries(new FormData(signupForm).entries());
 
       try {
@@ -1608,7 +1625,6 @@
         setSubmitBusy(mainContinueBtn, 'Loading payment form...');
         await initMainPaymentElement(payload);
         mainCheckoutState.leadPayload = payload;
-        populateMainSummary(payload);
         setMainFormStep(2);
         setMainStatus(signupFormStatus, 'success', 'Card form ready. Add your card to start your trial.');
       } catch (error) {
@@ -1677,6 +1693,38 @@
       setMainFormStep(1);
       setMainStatus(signupFormStatus, 'info', 'Update your details if needed, then continue to card.');
     });
+
+    function setDefaultPhoneCountryByLocale() {
+      const region = (navigator.language || '').split('-')[1] || '';
+      const localeToDial = {
+        US: '1',
+        CA: '1',
+        PH: '63',
+        GB: '44',
+        AU: '61',
+        NZ: '64',
+        SG: '65',
+        MY: '60',
+        TH: '66',
+        IN: '91',
+        AE: '971',
+      };
+      if (region && localeToDial[region]) {
+        phoneCountry.value = localeToDial[region];
+      }
+    }
+
+    phoneCountry.addEventListener('change', () => {
+      phoneLocal.setCustomValidity('');
+      normalizePhoneToE164();
+    });
+    phoneLocal.addEventListener('input', () => {
+      phoneLocal.setCustomValidity('');
+      normalizePhoneToE164();
+    });
+
+    setDefaultPhoneCountryByLocale();
+    normalizePhoneToE164();
     setMainFormStep(1);
   </script>
 </body>
