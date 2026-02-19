@@ -11,6 +11,7 @@ const DEFAULTS = {
   GHL_STAGE_MAX_SUPPORT_TRIAL_ID: '29d60203-9e41-4678-80db-4b96b9c17fbf',
   GHL_STAGE_MAX_SUPPORT_PAYING_ID: '7715d018-dcba-4037-b261-aa0f7ffeba83',
   GHL_STAGE_THREE_MONTH_PASS_ID: '62071a34-2e22-41a6-8fcb-450ea698f29e',
+  GHL_STAGE_SIX_MONTH_PASS_ID: 'a637ae2a-2ac4-4657-863e-576d3d0ea727',
 
   STRIPE_MAIN_TRIAL_PRICE_ID: '',
   STRIPE_GIFT_1M_PRICE_ID: '',
@@ -147,7 +148,7 @@ function createDefaultPlanCatalog(values) {
       mode: 'payment',
       label: '6 Month Gift',
       priceId: values.stripeGift6mPriceId,
-      stageId: values.stageThreeMonthPassId,
+      stageId: values.stageSixMonthPassId || values.stageThreeMonthPassId,
       amount: 139.99,
       aliases: ['6months', '6m'],
     }),
@@ -183,6 +184,7 @@ export function getConfig(env, request) {
     stageMaxSupportTrialId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_TRIAL_ID'),
     stageMaxSupportPayingId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_PAYING_ID'),
     stageThreeMonthPassId: readEnv(env, 'GHL_STAGE_THREE_MONTH_PASS_ID'),
+    stageSixMonthPassId: readEnv(env, 'GHL_STAGE_SIX_MONTH_PASS_ID'),
     trialPeriodDays,
   };
 
@@ -204,6 +206,7 @@ export function getConfig(env, request) {
     stageMaxSupportTrialId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_TRIAL_ID'),
     stageMaxSupportPayingId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_PAYING_ID'),
     stageThreeMonthPassId: readEnv(env, 'GHL_STAGE_THREE_MONTH_PASS_ID'),
+    stageSixMonthPassId: readEnv(env, 'GHL_STAGE_SIX_MONTH_PASS_ID'),
 
     stripeMainTrialPriceId: readEnv(env, 'STRIPE_MAIN_TRIAL_PRICE_ID'),
     stripeGift1mPriceId: readEnv(env, 'STRIPE_GIFT_1M_PRICE_ID'),

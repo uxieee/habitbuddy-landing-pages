@@ -26,7 +26,7 @@ Shared utilities:
 Frontend wiring:
 - `maxsupport.html` now uses in-page Stripe Payment Element (`/api/main-payment-element-init` + `/api/main-subscribe`) with no hosted checkout redirect.
 - `giftahabitbuddy.html` now uses in-page Stripe Payment Element (`/api/gift-payment-element-init` + `/api/gift-payment-complete`) with no hosted checkout redirect.
-- forms now send stable plan keys (`main_trial`, `gift_1m`, `gift_3m`) to backend.
+- forms now send stable plan keys (`main_trial`, `gift_1m`, `gift_3m`, `gift_6m`) to backend.
 - `_redirects` keeps legacy `/home` traffic forwarding to `/`.
 
 ## Core behavior
@@ -50,6 +50,7 @@ Frontend wiring:
    - move stage to:
      - 1-month -> `Max Support (Paying)`
      - 3-month -> `Three Month Pass`
+     - 6-month -> `Six Month Pass`
 
 ## Required env vars (baseline mode)
 
@@ -63,6 +64,10 @@ Copy `.dev.vars.example` and set:
 - `STRIPE_GIFT_3M_PRICE_ID`
 
 The backend now fails fast if Stripe price IDs are missing, so these must be explicitly configured.
+
+If 6-month gifting is enabled, also set:
+- `STRIPE_GIFT_6M_PRICE_ID`
+- `GHL_STAGE_SIX_MONTH_PASS_ID`
 
 ## Plan catalog mode (recommended for future changes)
 
