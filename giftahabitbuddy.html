@@ -114,6 +114,7 @@
     .nav__back {
       display: flex; align-items: center; gap: 8px;
       font-size: 14px; color: var(--text-secondary);
+      white-space: nowrap;
       text-decoration: none; transition: color 0.2s;
     }
     .nav__back:hover { color: var(--text-primary); }
@@ -532,11 +533,36 @@
       .occasions { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
-      .gift-hero { padding-top: 120px; }
-      .gift-form { padding: 28px; }
+      .gift-hero { padding: 96px 0 36px; }
+      .gift-hero__icon { font-size: 46px; margin-bottom: 14px; }
+      .gift-hero__title { font-size: clamp(34px, 11vw, 46px); margin-bottom: 14px; }
+      .gift-hero__sub { font-size: 16px; line-height: 1.6; margin: 0 auto 18px; }
+      .gift-form-section { padding-top: 28px; }
+      .gift-form-section .reveal:first-child { display: none; }
+      .gift-form {
+        margin-top: 0;
+        padding: 22px;
+      }
       .form-row { grid-template-columns: 1fr; }
+      .form-group { margin-bottom: 14px; }
+      .form-group input,
+      .form-group textarea,
+      .form-group select { padding: 12px 14px; }
       .theme-toggle__text { display: none; }
       .footer__inner { flex-direction: column; gap: 16px; text-align: center; }
+    }
+    @media (max-width: 380px) {
+      .nav__inner { padding: 0 14px; }
+      .nav__actions { gap: 8px; }
+      .theme-toggle { padding: 8px 11px; }
+      .nav__back { font-size: 13px; }
+      .gift-hero { padding: 86px 0 18px; }
+      .gift-hero__icon { font-size: 34px; margin-bottom: 10px; }
+      .gift-hero__title { font-size: clamp(30px, 10.8vw, 40px); margin-bottom: 0; }
+      .gift-hero__sub { display: none; }
+      .gift-form-section { padding-top: 16px; }
+      .gift-form { padding: 18px; }
+      .btn-gift { padding: 13px; }
     }
   </style>
 </head>
@@ -553,7 +579,7 @@
           <span class="theme-toggle__icon" aria-hidden="true">◐</span>
           <span class="theme-toggle__text" id="themeToggleLabel">Light mode</span>
         </button>
-        <a href="index.html" class="nav__back">
+        <a href="index.html" class="nav__back" aria-label="Back to Home">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8H4m4-4-4 4 4 4"/></svg>
           Back to Home
         </a>
@@ -686,6 +712,8 @@
     </div>
   </section>
 
+  <div id="giftFormAnchor" aria-hidden="true"></div>
+
   <!-- GIFT FORM -->
   <section class="section gift-form-section" id="gift-form">
     <div class="container">
@@ -787,6 +815,22 @@
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    function placeGiftFormForViewport() {
+      const formSection = document.getElementById('gift-form');
+      const heroSection = document.querySelector('.gift-hero');
+      const formAnchor = document.getElementById('giftFormAnchor');
+      if (!formSection || !heroSection || !formAnchor) return;
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        if (heroSection.nextElementSibling !== formSection) {
+          heroSection.insertAdjacentElement('afterend', formSection);
+        }
+      } else if (formAnchor.nextElementSibling !== formSection) {
+        formAnchor.insertAdjacentElement('afterend', formSection);
+      }
+    }
+    placeGiftFormForViewport();
+    window.addEventListener('resize', placeGiftFormForViewport);
 
     function selectGift(duration) {
       document.getElementById('giftDuration').value = duration;

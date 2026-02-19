@@ -95,6 +95,7 @@
       background: var(--bg-elevated);
       color: var(--text-secondary);
       text-decoration: none;
+      white-space: nowrap;
       font-size: 13px;
       font-weight: 600;
       font-family: var(--font-body);
@@ -161,7 +162,17 @@
     }
     @media (max-width: 640px) {
       .theme-toggle__text { display: none; }
+      .container { padding: 44px 20px 64px; }
       .nav__link { padding: 10px 12px; }
+    }
+    @media (max-width: 380px) {
+      .nav__inner { padding: 12px 14px; }
+      .nav__actions { gap: 8px; }
+      .theme-toggle,
+      .nav__link {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>

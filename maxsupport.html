@@ -132,6 +132,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
       font-size: 14px;
       color: var(--text-secondary);
       text-decoration: none;
@@ -819,6 +820,12 @@
       .signup-form__title { font-size: 32px; }
       .btn-submit { padding: 14px; }
     }
+    @media (max-width: 380px) {
+      .nav__inner { padding: 0 14px; }
+      .nav__actions { gap: 8px; }
+      .theme-toggle { padding: 8px 11px; }
+      .nav__back { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -835,7 +842,7 @@
           <span class="theme-toggle__icon" aria-hidden="true">◐</span>
           <span class="theme-toggle__text" id="themeToggleLabel">Light mode</span>
         </button>
-        <a href="index.html" class="nav__back">
+        <a href="index.html" class="nav__back" aria-label="Back to Home">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8H4m4-4-4 4 4 4"/></svg>
           Back to Home
         </a>

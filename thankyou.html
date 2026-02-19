@@ -397,9 +397,19 @@
     .footer__copy { font-size: 13px; color: var(--text-muted); }
 
     @media (max-width: 768px) {
+      .thankyou { padding: 28px 0 56px; }
       .next-steps { padding: 28px; }
       .actions { flex-direction: column; align-items: center; }
       .theme-toggle__text { display: none; }
+    }
+    @media (max-width: 380px) {
+      .nav__inner { padding: 0 14px; }
+      .theme-toggle { padding: 8px 11px; }
+      .thankyou { padding: 20px 0 48px; }
+      .success-check { width: 86px; height: 86px; margin-bottom: 24px; }
+      .success-check__circle { width: 86px; height: 86px; }
+      .preview-sms { padding: 18px; margin-bottom: 30px; }
+      .next-steps { padding: 22px; margin-bottom: 30px; }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
