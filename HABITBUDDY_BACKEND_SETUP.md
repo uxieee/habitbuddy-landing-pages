@@ -23,7 +23,7 @@ Frontend wiring:
 - `maxsupport.html` now posts to `/api/main-checkout-session` and redirects to Stripe Checkout.
 - `giftahabitbuddy.html` now posts to `/api/gift-checkout-session` and redirects to Stripe Checkout.
 - forms now send stable plan keys (`main_trial`, `gift_1m`, `gift_3m`) to backend.
-- `_redirects` maps clean paths (`/home`, `/maxsupport`, `/giftahabitbuddy`, `/thankyou`) to the corresponding HTML files.
+- `_redirects` keeps legacy `/home` traffic forwarding to `/`.
 
 ## Core behavior
 
