@@ -34,14 +34,16 @@
       --bg-card-hover: #1C1B22;
       --bg-elevated: #1E1D25;
       --amber: #E8923E;
+      --accent-amber: #E8923E;
       --amber-glow: #E8923E40;
       --amber-soft: #E8923E15;
       --amber-bright: #F5A623;
       --green: #34D399;
+      --accent-green: #34D399;
       --green-soft: #34D39920;
       --text-primary: #F5F3EF;
-      --text-secondary: #B8B2C4;
-      --text-muted: #A39DB2;
+      --text-secondary: #CAC4D5;
+      --text-muted: #B8B1C5;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -56,11 +58,13 @@
       --bg-card: #FFFFFF;
       --bg-card-hover: #F4F1EA;
       --bg-elevated: #FBF8F2;
+      --accent-amber: #95500D;
+      --accent-green: #11784E;
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
       --text-primary: #1D1A24;
-      --text-secondary: #4C465C;
-      --text-muted: #60596F;
+      --text-secondary: #3F394F;
+      --text-muted: #4F495F;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -127,7 +131,7 @@
       color: var(--text-primary);
       text-decoration: none;
     }
-    .nav__logo span { color: var(--amber); }
+    .nav__logo span { color: var(--accent-amber); }
     .nav__back {
       display: flex;
       align-items: center;
@@ -186,7 +190,7 @@
       border-radius: 100px;
       font-size: 13px;
       font-weight: 600;
-      color: var(--green);
+      color: var(--accent-green);
       margin-bottom: 24px;
     }
     .signup-hero__badge .dot {
@@ -207,7 +211,7 @@
     }
     .signup-hero__title em {
       font-style: italic;
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .signup-hero__sub {
       font-size: 18px;
@@ -228,7 +232,7 @@
       font-size: 15px;
       color: var(--text-secondary);
     }
-    .signup-hero__includes li svg { color: var(--amber); flex-shrink: 0; }
+    .signup-hero__includes li svg { color: var(--accent-amber); flex-shrink: 0; }
     .signup-hero__price {
       display: flex;
       align-items: baseline;
@@ -238,7 +242,7 @@
     .signup-hero__price-free {
       font-family: var(--font-display);
       font-size: 42px;
-      color: var(--green);
+      color: var(--accent-green);
     }
     .signup-hero__price-after {
       font-size: 15px;
@@ -308,7 +312,7 @@
     .form-group input::placeholder { color: var(--text-muted); }
     .form-group input:focus,
     .form-group select:focus {
-      border-color: var(--amber);
+      border-color: var(--accent-amber);
       box-shadow: 0 0 0 3px var(--amber-glow);
     }
     .form-group select {
@@ -356,7 +360,7 @@
       min-height: 20px;
       color: var(--text-secondary);
     }
-    .form-status.is-success { color: var(--green); }
+    .form-status.is-success { color: var(--accent-green); }
     .form-status.is-error { color: #EF4444; }
     .form-status.is-info { color: var(--text-secondary); }
     .form-trust {
@@ -375,7 +379,7 @@
       font-size: 12px;
       color: var(--text-muted);
     }
-    .form-trust__item svg { color: var(--green); }
+    .form-trust__item svg { color: var(--accent-green); }
 
     /* ===== SOCIAL PROOF BAR ===== */
     .social-proof-bar {
@@ -399,7 +403,7 @@
       color: var(--text-primary);
       line-height: 1;
     }
-    .proof-stat__number span { color: var(--amber); }
+    .proof-stat__number span { color: var(--accent-amber); }
     .proof-stat__label {
       font-size: 13px;
       color: var(--text-muted);
@@ -413,7 +417,7 @@
       font-weight: 600;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--accent-amber);
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -455,7 +459,7 @@
       transform: translateY(-3px);
     }
     .mini-testimonial__stars {
-      color: var(--amber);
+      color: var(--accent-amber);
       font-size: 14px;
       margin-bottom: 12px;
       letter-spacing: 2px;
@@ -508,8 +512,8 @@
       transition: all 0.25s;
     }
     .mini-testimonial__video-btn:hover {
-      border-color: var(--amber);
-      color: var(--amber);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
       background: var(--amber-soft);
     }
 
@@ -634,7 +638,7 @@
       cursor: pointer;
       transition: color 0.2s;
     }
-    .faq-item__q:hover { color: var(--amber); }
+    .faq-item__q:hover { color: var(--accent-amber); }
     .faq-item__q svg {
       flex-shrink: 0;
       transition: transform 0.3s;
@@ -642,7 +646,7 @@
     }
     .faq-item.active .faq-item__q svg {
       transform: rotate(45deg);
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .faq-item__a {
       max-height: 0;
@@ -703,7 +707,7 @@
     }
     .bottom-cta__title em {
       font-style: italic;
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .bottom-cta__sub {
       font-size: 16px;
@@ -739,7 +743,7 @@
       color: var(--text-muted);
       margin-top: 14px;
     }
-    .trust-line svg { color: var(--green); }
+    .trust-line svg { color: var(--accent-green); }
 
     /* Footer */
     .footer {

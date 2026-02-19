@@ -32,17 +32,19 @@
       --bg-card: #16151A;
       --bg-elevated: #1E1D25;
       --amber: #E8923E;
+      --accent-amber: #E8923E;
       --amber-glow: #E8923E40;
       --amber-soft: #E8923E15;
       --amber-bright: #F5A623;
       --green: #34D399;
+      --accent-green: #34D399;
       --green-soft: #34D39920;
       --rose: #F43F5E;
       --rose-soft: #F43F5E15;
       --rose-glow: #F43F5E40;
       --text-primary: #F5F3EF;
-      --text-secondary: #B8B2C4;
-      --text-muted: #A39DB2;
+      --text-secondary: #CAC4D5;
+      --text-muted: #B8B1C5;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -56,12 +58,14 @@
       --bg-deep: #F6F3ED;
       --bg-card: #FFFFFF;
       --bg-elevated: #FBF8F2;
+      --accent-amber: #95500D;
+      --accent-green: #11784E;
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
       --rose-soft: #F43F5E22;
       --text-primary: #1D1A24;
-      --text-secondary: #4C465C;
-      --text-muted: #60596F;
+      --text-secondary: #3F394F;
+      --text-muted: #4F495F;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -110,7 +114,7 @@
       font-family: var(--font-display); font-size: 22px;
       color: var(--text-primary); text-decoration: none;
     }
-    .nav__logo span { color: var(--amber); }
+    .nav__logo span { color: var(--accent-amber); }
     .nav__back {
       display: flex; align-items: center; gap: 8px;
       font-size: 14px; color: var(--text-secondary);
@@ -213,7 +217,7 @@
       top: -1px; left: 50%;
       transform: translateX(-50%);
       background: var(--rose);
-      color: #fff;
+      color: #1D1A24;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 1px;
@@ -249,7 +253,7 @@
       border-radius: 100px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--green);
+      color: var(--accent-green);
       margin-bottom: 24px;
     }
     .gift-card__features {
@@ -265,7 +269,7 @@
       font-size: 14px;
       color: var(--text-secondary);
     }
-    .gift-card__features li svg { color: var(--amber); flex-shrink: 0; }
+    .gift-card__features li svg { color: var(--accent-amber); flex-shrink: 0; }
     .gift-card__btn {
       width: 100%;
       padding: 14px;
@@ -284,7 +288,7 @@
     }
     .gift-card__btn--primary {
       background: var(--rose);
-      color: #fff;
+      color: #1D1A24;
     }
     .gift-card__btn--primary:hover {
       transform: translateY(-2px);
@@ -310,7 +314,7 @@
     .section { padding: 100px 0; }
     .section-label {
       font-size: 11px; font-weight: 600; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--amber);
+      text-transform: uppercase; color: var(--accent-amber);
       margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
     }
     .section-label::before { content: ''; width: 20px; height: 1px; background: var(--amber); }
@@ -427,7 +431,7 @@
 
     .btn-gift {
       width: 100%; padding: 16px;
-      background: var(--rose); color: #fff;
+      background: var(--rose); color: #1D1A24;
       font-weight: 700; font-size: 16px;
       border: none; border-radius: 100px;
       cursor: pointer; font-family: var(--font-body);
@@ -452,7 +456,7 @@
       min-height: 20px;
       color: var(--text-secondary);
     }
-    .form-status.is-success { color: var(--green); }
+    .form-status.is-success { color: var(--accent-green); }
     .form-status.is-error { color: #EF4444; }
     .form-status.is-info { color: var(--text-secondary); }
     .form-note {

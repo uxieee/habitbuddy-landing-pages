@@ -34,16 +34,18 @@
       --bg-card-hover: #1C1B22;
       --bg-elevated: #1E1D25;
       --amber: #E8923E;
+      --accent-amber: #E8923E;
       --amber-glow: #E8923E40;
       --amber-soft: #E8923E15;
       --amber-bright: #F5A623;
       --green: #34D399;
+      --accent-green: #34D399;
       --green-soft: #34D39920;
       --text-primary: #F5F3EF;
-      --text-secondary: #B8B2C4;
-      --text-muted: #A39DB2;
+      --text-secondary: #CAC4D5;
+      --text-muted: #B8B1C5;
       --phone-text-primary: #F5F3EF;
-      --phone-text-muted: #A39DB2;
+      --phone-text-muted: #B8B1C5;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -62,13 +64,15 @@
       --bg-card: #FFFFFF;
       --bg-card-hover: #F4F1EA;
       --bg-elevated: #FBF8F2;
+      --accent-amber: #95500D;
+      --accent-green: #11784E;
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
       --text-primary: #1D1A24;
-      --text-secondary: #4C465C;
-      --text-muted: #60596F;
+      --text-secondary: #3F394F;
+      --text-muted: #4F495F;
       --phone-text-primary: #F5F3EF;
-      --phone-text-muted: #A39DB2;
+      --phone-text-muted: #B8B1C5;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -118,7 +122,7 @@
       font-weight: 600;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--accent-amber);
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -165,6 +169,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 14px;
     }
     .nav__logo {
       font-family: var(--font-display);
@@ -172,8 +177,13 @@
       color: var(--text-primary);
       text-decoration: none;
     }
-    .nav__logo span { color: var(--amber); }
+    .nav__logo span { color: var(--accent-amber); }
     .nav__links { display: flex; align-items: center; gap: 32px; }
+    .nav__mobile-actions {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
     .nav__links a {
       font-size: 14px;
       font-weight: 500;
@@ -203,6 +213,13 @@
       transform: translateY(-1px);
     }
     .theme-toggle__icon { font-size: 14px; line-height: 1; }
+    .theme-toggle--mobile {
+      display: none;
+      padding: 8px 12px;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .theme-toggle--mobile .theme-toggle__icon { font-size: 13px; }
     .nav__links .nav__cta {
       display: inline-flex;
       align-items: center;
@@ -245,7 +262,7 @@
       border-radius: 100px;
       font-size: 13px;
       font-weight: 500;
-      color: var(--amber-bright);
+      color: var(--accent-amber);
       margin-bottom: 24px;
       animation: fadeInUp 0.6s ease;
     }
@@ -269,7 +286,7 @@
     }
     .hero__title em {
       font-style: italic;
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .hero__sub {
       font-size: 18px;
@@ -336,7 +353,25 @@
       color: var(--text-muted);
       animation: fadeInUp 0.6s ease 0.4s both;
     }
-    .hero__trust svg { color: var(--green); flex-shrink: 0; }
+    .hero__trust svg { color: var(--accent-green); flex-shrink: 0; }
+    .phone-preview-trigger {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 18px;
+      border-radius: 100px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .phone-preview-trigger:hover {
+      border-color: var(--accent-amber);
+      transform: translateY(-1px);
+    }
 
     /* Phone mockup */
     .phone-mockup {
@@ -377,7 +412,7 @@
     }
     .sms-header__status {
       font-size: 11px;
-      color: var(--green);
+      color: #6BE8BD;
     }
     .sms-bubble {
       max-width: 85%;
@@ -441,7 +476,7 @@
       line-height: 1;
       margin-bottom: 8px;
     }
-    .stat__number span { color: var(--amber); }
+    .stat__number span { color: var(--accent-amber); }
     .stat__label {
       font-size: 14px;
       color: var(--text-secondary);
@@ -482,7 +517,7 @@
     .step-card__number {
       font-family: var(--font-display);
       font-size: 64px;
-      color: var(--amber);
+      color: var(--accent-amber);
       opacity: 0.15;
       position: absolute;
       top: 16px; right: 24px;
@@ -507,7 +542,8 @@
     }
     .step-card__desc {
       font-size: 15px;
-      color: var(--text-secondary);
+      color: var(--text-primary);
+      opacity: 0.82;
       line-height: 1.7;
     }
 
@@ -536,7 +572,7 @@
     .sms-banner__stat {
       font-family: var(--font-display);
       font-size: clamp(56px, 8vw, 96px);
-      color: var(--amber);
+      color: var(--accent-amber);
       line-height: 1;
       margin-bottom: 16px;
     }
@@ -556,20 +592,28 @@
 
     /* ===== GIFT SPOTLIGHT ===== */
     .gift-spotlight {
-      padding: 20px 0 80px;
+      padding: 28px 0 88px;
+      position: relative;
     }
+    .gift-spotlight::before,
+    .gift-spotlight::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.85;
+    }
+    .gift-spotlight::before { top: 0; }
+    .gift-spotlight::after { bottom: 0; }
     .gift-spotlight__panel {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 28px;
-      align-items: stretch;
-      padding: 38px;
-      border-radius: 24px;
-      border: 1px solid var(--amber-glow);
-      background:
-        radial-gradient(circle at 88% -8%, #E8923E24 0%, transparent 45%),
-        linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+      align-items: start;
+      padding: 38px 0;
     }
+    .gift-spotlight__content { padding-right: 4px; }
     .gift-spotlight__content .section-label {
       margin-bottom: 12px;
     }
@@ -580,12 +624,13 @@
       margin-bottom: 14px;
     }
     .gift-spotlight__title em {
-      color: var(--amber);
+      color: var(--accent-amber);
       font-style: italic;
     }
     .gift-spotlight__sub {
       font-size: 16px;
-      color: var(--text-secondary);
+      color: var(--text-primary);
+      opacity: 0.8;
       margin-bottom: 24px;
       max-width: 54ch;
     }
@@ -602,13 +647,15 @@
     .gift-spotlight__plans {
       display: grid;
       gap: 12px;
+      border-left: 1px solid var(--border);
+      padding-left: 24px;
     }
     .gift-plan {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--bg-deep);
-      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      padding: 0 0 14px;
     }
+    .gift-plan:last-child { border-bottom: none; padding-bottom: 0; }
     .gift-plan__top {
       display: flex;
       align-items: baseline;
@@ -623,16 +670,16 @@
     }
     .gift-plan__price {
       font-size: 17px;
-      color: var(--amber);
+      color: var(--accent-amber);
       font-weight: 700;
     }
     .gift-plan__desc {
       font-size: 13px;
-      color: var(--text-secondary);
+      color: var(--text-primary);
+      opacity: 0.78;
     }
     .gift-plan--featured {
-      border-color: var(--amber-glow);
-      background: linear-gradient(135deg, var(--amber-soft), transparent 80%);
+      border-bottom-color: var(--amber-glow);
     }
     .gift-plan__tag {
       display: inline-flex;
@@ -640,7 +687,7 @@
       padding: 4px 9px;
       border-radius: 999px;
       background: var(--green-soft);
-      color: var(--green);
+      color: var(--accent-green);
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.2px;
@@ -665,7 +712,7 @@
       border-bottom: 1px solid var(--border);
     }
     .comparison-table th:last-child {
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .comparison-table td {
       padding: 18px 20px;
@@ -681,7 +728,7 @@
     .comparison-table td:last-child {
       background: var(--amber-soft);
       font-weight: 600;
-      color: var(--amber-bright);
+      color: var(--accent-amber);
     }
     .comparison-table tr:first-of-type td:last-child {
       border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -689,7 +736,7 @@
     .comparison-table tr:last-of-type td:last-child {
       border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     }
-    .check { color: var(--green); font-weight: 700; }
+    .check { color: var(--accent-green); font-weight: 700; }
     .cross { color: #EF4444; }
 
     /* ===== TESTIMONIALS ===== */
@@ -712,7 +759,7 @@
       box-shadow: 0 16px 48px rgba(0,0,0,0.25);
     }
     .testimonial-card__stars {
-      color: var(--amber);
+      color: var(--accent-amber);
       font-size: 16px;
       margin-bottom: 16px;
       letter-spacing: 2px;
@@ -760,7 +807,7 @@
       border-radius: 100px;
       font-size: 13px;
       font-weight: 600;
-      color: var(--green);
+      color: var(--accent-green);
     }
 
     /* Video play button on testimonial cards */
@@ -782,8 +829,8 @@
       transition: all 0.25s;
     }
     .testimonial-card__video-btn:hover {
-      border-color: var(--amber);
-      color: var(--amber);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
       background: var(--amber-soft);
     }
     .testimonial-card__video-btn svg {
@@ -862,6 +909,75 @@
       transform: scale(1.1);
     }
 
+    /* Mobile phone preview modal */
+    .phone-preview-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .phone-preview-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .phone-preview-modal__backdrop {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.84);
+      backdrop-filter: blur(8px);
+    }
+    .phone-preview-modal__panel {
+      position: relative;
+      width: min(92vw, 340px);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px 14px 14px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }
+    .phone-preview-modal__title {
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .phone-preview-modal__close {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 17px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .phone-preview-modal__body {
+      max-height: 78vh;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .phone-preview-modal .phone-frame {
+      width: 216px;
+      padding: 10px;
+      border-radius: 32px;
+    }
+    .phone-preview-modal .phone-screen {
+      min-height: 336px;
+      padding: 16px 12px;
+      border-radius: 24px;
+    }
+
     /* ===== FEATURES ===== */
     .features__grid {
       display: grid;
@@ -891,7 +1007,8 @@
     }
     .feature-card__desc {
       font-size: 14px;
-      color: var(--text-secondary);
+      color: var(--text-primary);
+      opacity: 0.8;
       line-height: 1.7;
     }
 
@@ -972,7 +1089,7 @@
       border-radius: 100px;
       font-size: 14px;
       font-weight: 600;
-      color: var(--green);
+      color: var(--accent-green);
       margin-bottom: 32px;
     }
     .pricing__features {
@@ -990,7 +1107,7 @@
       border-bottom: 1px solid var(--border);
     }
     .pricing__features li:last-child { border-bottom: none; }
-    .pricing__features li svg { color: var(--amber); flex-shrink: 0; }
+    .pricing__features li svg { color: var(--accent-amber); flex-shrink: 0; }
 
     /* ===== FAQ ===== */
     .faq__list {
@@ -1016,7 +1133,7 @@
       cursor: pointer;
       transition: color 0.2s;
     }
-    .faq-item__q:hover { color: var(--amber); }
+    .faq-item__q:hover { color: var(--accent-amber); }
     .faq-item__q svg {
       flex-shrink: 0;
       transition: transform 0.3s;
@@ -1024,7 +1141,7 @@
     }
     .faq-item.active .faq-item__q svg {
       transform: rotate(45deg);
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .faq-item__a {
       max-height: 0;
@@ -1069,7 +1186,7 @@
     }
     .founder__role {
       font-size: 14px;
-      color: var(--amber);
+      color: var(--accent-amber);
       margin-bottom: 16px;
       font-weight: 500;
     }
@@ -1092,7 +1209,7 @@
     }
     .final-cta__title em {
       font-style: italic;
-      color: var(--amber);
+      color: var(--accent-amber);
     }
     .final-cta__sub {
       font-size: 18px;
@@ -1184,6 +1301,8 @@
     @media (max-width: 768px) {
       :root { --section-gap: 80px; }
       .nav__links { display: none; }
+      .nav__mobile-actions { display: flex; }
+      .theme-toggle--mobile { display: inline-flex; }
       .nav__toggle { display: block; }
       .nav__links.open {
         display: flex;
@@ -1195,6 +1314,7 @@
         padding: 24px;
         gap: 16px;
       }
+      .nav__links .theme-toggle { display: none; }
       .nav__links.open .theme-toggle { width: 100%; justify-content: center; }
       .features__grid { grid-template-columns: 1fr; }
       .comparison-table { font-size: 13px; }
@@ -1204,10 +1324,8 @@
       .hero__badge { margin-bottom: 16px; }
       .hero__title { margin-bottom: 16px; }
       .hero__sub { margin-bottom: 22px; }
-      .phone-mockup {
-        order: 2;
-        margin-top: 0;
-      }
+      .phone-mockup { display: none; }
+      .phone-preview-trigger { display: inline-flex; align-items: center; justify-content: center; }
       .phone-frame {
         width: 208px;
         padding: 10px;
@@ -1243,16 +1361,24 @@
       .hero__actions .btn-primary,
       .hero__actions .btn-secondary { width: 100%; justify-content: center; }
       .sms-banner__card { padding: 40px 24px; }
-      .gift-spotlight { padding-top: 10px; }
-      .gift-spotlight__panel { padding: 28px 22px; }
+      .gift-spotlight { padding: 16px 0 64px; }
+      .gift-spotlight__panel { padding: 22px 0; }
+      .gift-spotlight__plans {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 18px;
+      }
       .gift-spotlight__actions { flex-direction: column; align-items: stretch; }
       .gift-spotlight__actions .btn-primary,
       .gift-spotlight__actions .btn-secondary { width: 100%; justify-content: center; }
     }
     @media (max-width: 480px) {
+      .nav__inner { padding: 0 14px; }
       .stats-bar__inner { grid-template-columns: 1fr 1fr; gap: 24px; }
       .hero__title { font-size: clamp(34px, 10vw, 40px); }
       .hero__sub { font-size: 16px; margin-bottom: 28px; }
+      .theme-toggle--mobile { padding: 8px 10px; font-size: 11px; }
       .phone-frame { width: 188px; }
       .phone-screen { min-height: 304px; padding: 14px 10px; }
     }
@@ -1268,18 +1394,24 @@
   <nav class="nav" id="nav">
     <div class="nav__inner">
       <a href="/" class="nav__logo">Habit<span>Buddy</span></a>
-      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-controls="navLinks" aria-expanded="false">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
+      <div class="nav__mobile-actions">
+        <button class="theme-toggle theme-toggle--mobile" id="themeToggleMobile" data-theme-toggle type="button" aria-label="Switch theme">
+          <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+          <span data-theme-toggle-label="short" id="themeToggleLabelMobile">Light</span>
+        </button>
+        <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-controls="navLinks" aria-expanded="false">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
       <div class="nav__links" id="navLinks">
         <a href="#how-it-works">How It Works</a>
         <a href="#pricing">Pricing</a>
         <a href="giftahabitbuddy.html">Gift</a>
         <a href="#testimonials">Testimonials</a>
         <a href="#faq">FAQ</a>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <button class="theme-toggle" id="themeToggle" data-theme-toggle type="button" aria-label="Switch theme">
           <span class="theme-toggle__icon" aria-hidden="true">◐</span>
-          <span id="themeToggleLabel">Light mode</span>
+          <span data-theme-toggle-label="full" id="themeToggleLabel">Light mode</span>
         </button>
         <a href="maxsupport.html" class="nav__cta">
           Start Free Trial
@@ -1317,6 +1449,9 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 110 16A8 8 0 018 0zm3.5 5.5a.75.75 0 00-1.06 0L7 8.94 5.56 7.5a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l4-4a.75.75 0 00-.06-1.06z"/></svg>
             Card required &nbsp;&middot;&nbsp; Charged after trial &nbsp;&middot;&nbsp; Cancel anytime
           </p>
+          <button class="phone-preview-trigger" type="button" onclick="openPhonePreviewModal()">
+            View sample conversation
+          </button>
         </div>
 
         <!-- Phone mockup showing real SMS conversation -->
@@ -1863,6 +1998,16 @@
     </div>
   </footer>
 
+  <!-- Mobile Phone Preview Modal -->
+  <div class="phone-preview-modal" id="phonePreviewModal" aria-hidden="true">
+    <div class="phone-preview-modal__backdrop" onclick="closePhonePreviewModal()"></div>
+    <div class="phone-preview-modal__panel" role="dialog" aria-modal="true" aria-label="Sample conversation preview">
+      <button class="phone-preview-modal__close" type="button" onclick="closePhonePreviewModal()" aria-label="Close conversation preview">&times;</button>
+      <div class="phone-preview-modal__title">Sample Conversation</div>
+      <div class="phone-preview-modal__body" id="phonePreviewModalBody"></div>
+    </div>
+  </div>
+
   <!-- Video Modal -->
   <div class="video-modal" id="videoModal">
     <div class="video-modal__backdrop" onclick="closeVideoModal()"></div>
@@ -1889,20 +2034,57 @@
       // Stop video by clearing src after transition
       setTimeout(() => { iframe.src = ''; }, 300);
     }
+
+    function hydratePhonePreviewModal() {
+      const target = document.getElementById('phonePreviewModalBody');
+      if (!target || target.childElementCount > 0) return;
+      const sourceFrame = document.querySelector('.phone-mockup .phone-frame');
+      if (!sourceFrame) return;
+      target.appendChild(sourceFrame.cloneNode(true));
+    }
+    function openPhonePreviewModal() {
+      const modal = document.getElementById('phonePreviewModal');
+      hydratePhonePreviewModal();
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePhonePreviewModal() {
+      const modal = document.getElementById('phonePreviewModal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeVideoModal();
+      if (e.key !== 'Escape') return;
+      const phoneModal = document.getElementById('phonePreviewModal');
+      const videoModal = document.getElementById('videoModal');
+      if (phoneModal.classList.contains('active')) {
+        closePhonePreviewModal();
+      } else if (videoModal.classList.contains('active')) {
+        closeVideoModal();
+      }
     });
 
-    const themeToggle = document.getElementById('themeToggle');
-    const themeToggleLabel = document.getElementById('themeToggleLabel');
+    const themeToggles = Array.from(document.querySelectorAll('[data-theme-toggle]'));
+    const themeToggleLabels = Array.from(document.querySelectorAll('[data-theme-toggle-label]'));
     function currentTheme() {
       return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
     }
     function updateThemeToggle(theme) {
-      const nextThemeLabel = theme === 'dark' ? 'Light mode' : 'Dark mode';
-      themeToggleLabel.textContent = nextThemeLabel;
-      themeToggle.setAttribute('aria-label', 'Switch to ' + nextThemeLabel.toLowerCase());
+      const nextTheme = theme === 'dark' ? 'light' : 'dark';
+      themeToggleLabels.forEach((labelEl) => {
+        if (labelEl.dataset.themeToggleLabel === 'short') {
+          labelEl.textContent = nextTheme === 'light' ? 'Light' : 'Dark';
+        } else {
+          labelEl.textContent = nextTheme === 'light' ? 'Light mode' : 'Dark mode';
+        }
+      });
+      themeToggles.forEach((toggleEl) => {
+        toggleEl.setAttribute('aria-label', 'Switch to ' + nextTheme + ' mode');
+      });
     }
     function setTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
@@ -1910,8 +2092,10 @@
       try { localStorage.setItem('habitbuddy-theme', theme); } catch (error) {}
     }
     updateThemeToggle(currentTheme());
-    themeToggle.addEventListener('click', () => {
-      setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    themeToggles.forEach((toggleEl) => {
+      toggleEl.addEventListener('click', () => {
+        setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+      });
     });
 
     // Scroll-aware nav
