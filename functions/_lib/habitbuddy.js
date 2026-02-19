@@ -667,7 +667,7 @@ export async function createMainSetupIntentForLead(env, request, payload) {
   const setupIntent = await createSetupIntent(env, {
     customer: customer.id,
     usage: 'off_session',
-    automatic_payment_methods: { enabled: true },
+    payment_method_types: ['card'],
     metadata,
   });
 
@@ -770,7 +770,7 @@ export async function createGiftPaymentIntentForLead(env, request, payload) {
   const paymentIntent = await createPaymentIntent(env, {
     amount: amountCents,
     currency: 'usd',
-    automatic_payment_methods: { enabled: true },
+    payment_method_types: ['card'],
     receipt_email: lead.senderEmail || undefined,
     description: `${plan.label} - Habit Buddy Gift`,
     metadata,
