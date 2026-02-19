@@ -19,11 +19,10 @@ import {
   createCustomer,
   createSetupIntent,
   retrieveSetupIntent,
-  createSubscriptionWithIdempotency,
+  createSubscription,
   createPaymentIntent,
   retrievePaymentIntent,
   retrievePrice,
-  listSubscriptions,
 } from './stripe.js';
 
 const TAGS = {
@@ -134,64 +133,6 @@ function splitName(fullName) {
   };
 }
 
-function badRequest(message) {
-  const error = new Error(message);
-  error.status = 400;
-  return error;
-}
-
-function enforceMaxLength(value, maxLength, fieldLabel) {
-  if (!value) return value;
-  if (value.length > maxLength) {
-    throw badRequest(`${fieldLabel} is too long.`);
-  }
-  return value;
-}
-
-function validateEmail(value, fieldLabel, required = false) {
-  const email = cleanEmail(value);
-  if (!email) {
-    if (required) throw badRequest(`${fieldLabel} is required.`);
-    return '';
-  }
-
-  enforceMaxLength(email, 254, fieldLabel);
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    throw badRequest(`${fieldLabel} is invalid.`);
-  }
-
-  return email;
-}
-
-function normalizeAndValidatePhone(value, fieldLabel, required = false) {
-  const phone = cleanPhone(value);
-  if (!phone) {
-    if (required) throw badRequest(`${fieldLabel} is required.`);
-    return '';
-  }
-
-  const digits = phone.replace(/\D/g, '');
-  if (digits.length < 8 || digits.length > 15) {
-    throw badRequest(`${fieldLabel} is invalid.`);
-  }
-
-  return `+${digits}`;
-}
-
-function validatePlanReference(planKey, fieldLabel = 'Plan') {
-  const normalized = normalizePlanReference(planKey);
-  if (!normalized) {
-    throw badRequest(`${fieldLabel} is required.`);
-  }
-
-  if (!/^[a-z0-9_]{1,40}$/.test(normalized)) {
-    throw badRequest(`${fieldLabel} is invalid.`);
-  }
-
-  return normalized;
-}
-
 function listOpportunityCustomFields(config, fields) {
   const mapped = [
     { id: config.oppGiftingFlagFieldId, value: fields.giftingFlag },
@@ -290,34 +231,66 @@ async function upsertOpportunityAtStage(env, params) {
 }
 
 function normalizeMainLeadPayload(payload) {
-  const firstName = enforceMaxLength(cleanText(payload.first_name || payload.firstName), 80, 'First name');
-  if (!firstName) throw badRequest('First name is required.');
+  const firstName = cleanText(payload.first_name || payload.firstName);
+  const email = cleanEmail(payload.email);
+  const phone = cleanPhone(payload.phone);
+  const habitFocus = cleanText(payload.habit_focus || payload.habitFocus);
+  const checkinTime = cleanText(payload.checkin_time || payload.checkinTime);
+  const planKey = normalizePlanReference(payload.plan_key || payload.planKey || MAIN_TRIAL_PLAN_KEY);
 
-  const email = validateEmail(payload.email, 'Email', false);
-  const phone = normalizeAndValidatePhone(payload.phone, 'Phone number', true);
-  const habitFocus = enforceMaxLength(cleanText(payload.habit_focus || payload.habitFocus), 160, 'Habit focus');
-  const checkinTime = enforceMaxLength(cleanText(payload.checkin_time || payload.checkinTime), 64, 'Check-in time');
-  const planKey = validatePlanReference(payload.plan_key || payload.planKey || MAIN_TRIAL_PLAN_KEY, 'Plan');
+  if (!firstName) {
+    const error = new Error('First name is required.');
+    error.status = 400;
+    throw error;
+  }
+
+  if (!phone) {
+    const error = new Error('Phone number is required.');
+    error.status = 400;
+    throw error;
+  }
 
   return { firstName, email, phone, habitFocus, checkinTime, planKey };
 }
 
 function normalizeGiftLeadPayload(payload) {
-  const senderName = enforceMaxLength(cleanText(payload.sender_name || payload.senderName), 120, 'Sender name');
-  if (!senderName) throw badRequest('Sender name is required.');
+  const senderName = cleanText(payload.sender_name || payload.senderName);
+  const senderEmail = cleanEmail(payload.sender_email || payload.senderEmail);
+  const recipientName = cleanText(payload.recipient_name || payload.recipientName);
+  const recipientPhone = cleanPhone(payload.recipient_phone || payload.recipientPhone);
+  const recipientEmail = cleanEmail(payload.recipient_email || payload.recipientEmail);
+  const planKey = normalizePlanReference(payload.plan_key || payload.planKey || payload.gift_duration || payload.giftDuration);
+  const message = cleanText(payload.gift_message || payload.giftMessage);
 
-  const senderEmail = validateEmail(payload.sender_email || payload.senderEmail, 'Sender email', true);
+  if (!senderName) {
+    const error = new Error('Sender name is required.');
+    error.status = 400;
+    throw error;
+  }
 
-  const recipientName = enforceMaxLength(cleanText(payload.recipient_name || payload.recipientName), 120, 'Recipient name');
-  if (!recipientName) throw badRequest('Recipient name is required.');
+  if (!senderEmail) {
+    const error = new Error('Sender email is required.');
+    error.status = 400;
+    throw error;
+  }
 
-  const recipientPhone = normalizeAndValidatePhone(payload.recipient_phone || payload.recipientPhone, 'Recipient phone', true);
-  const recipientEmail = validateEmail(payload.recipient_email || payload.recipientEmail, 'Recipient email', false);
-  const planKey = validatePlanReference(
-    payload.plan_key || payload.planKey || payload.gift_duration || payload.giftDuration,
-    'Gift plan',
-  );
-  const message = enforceMaxLength(cleanText(payload.gift_message || payload.giftMessage), 600, 'Gift message');
+  if (!recipientName) {
+    const error = new Error('Recipient name is required.');
+    error.status = 400;
+    throw error;
+  }
+
+  if (!recipientPhone) {
+    const error = new Error('Recipient phone is required.');
+    error.status = 400;
+    throw error;
+  }
+
+  if (!planKey) {
+    const error = new Error('Gift plan is required.');
+    error.status = 400;
+    throw error;
+  }
 
   return {
     senderName,
@@ -707,30 +680,6 @@ export async function createMainSetupIntentForLead(env, request, payload) {
   };
 }
 
-async function findExistingMainSubscription(env, customerId, setupIntentId) {
-  if (!customerId || !setupIntentId) return null;
-
-  try {
-    const response = await listSubscriptions(env, {
-      customer: customerId,
-      status: 'all',
-      limit: 100,
-    });
-    const subscriptions = Array.isArray(response?.data) ? response.data : [];
-    return (
-      subscriptions.find((subscription) => {
-        const metadata = subscription?.metadata || {};
-        const linkedSetupIntentId = cleanText(metadata.setupIntentId || metadata.setup_intent_id);
-        const status = cleanText(subscription?.status).toLowerCase();
-        return linkedSetupIntentId === setupIntentId && status !== 'canceled';
-      }) || null
-    );
-  } catch (error) {
-    console.warn('Subscription lookup failed (non-blocking):', error?.message || error);
-    return null;
-  }
-}
-
 export async function activateMainSubscriptionFromSetupIntent(env, request, payload) {
   const config = getConfig(env, request);
   assertConfig(config, ['stripeSecretKey', 'ghlPrivateToken', 'locationId', 'pipelineId']);
@@ -749,14 +698,7 @@ export async function activateMainSubscriptionFromSetupIntent(env, request, payl
   }
 
   const metadata = setupIntent?.metadata || {};
-  const metadataPlanKey = normalizePlanReference(metadata.planKey || metadata.plan_key);
-  const requestPlanKey = normalizePlanReference(payload.plan_key || payload.planKey);
-  if (metadataPlanKey && requestPlanKey && metadataPlanKey !== requestPlanKey) {
-    throw badRequest('Plan mismatch for setup intent.');
-  }
-
-  const resolvedPlanKey = metadataPlanKey || requestPlanKey || MAIN_TRIAL_PLAN_KEY;
-  const plan = resolveMainPlan(config, resolvedPlanKey);
+  const plan = resolveMainPlan(config, payload.plan_key || payload.planKey || metadata.planKey || MAIN_TRIAL_PLAN_KEY);
   const customerId = cleanText(setupIntent?.customer);
   const paymentMethodId = cleanText(setupIntent?.payment_method?.id || setupIntent?.payment_method);
 
@@ -769,30 +711,22 @@ export async function activateMainSubscriptionFromSetupIntent(env, request, payl
   const mergedMetadata = {
     ...metadata,
     flow: 'main_trial',
-    setupIntentId,
     planKey: plan.key,
     locationId: config.locationId,
     pipelineId: config.pipelineId,
     targetStageId: plan.stageId,
   };
 
-  const existingSubscription = await findExistingMainSubscription(env, customerId, setupIntentId);
-  const subscription =
-    existingSubscription ||
-    (await createSubscriptionWithIdempotency(
-      env,
-      {
-        customer: customerId,
-        items: [{ price: plan.priceId }],
-        trial_period_days: plan.trialPeriodDays || config.trialPeriodDays,
-        default_payment_method: paymentMethodId,
-        payment_settings: {
-          save_default_payment_method: 'on_subscription',
-        },
-        metadata: mergedMetadata,
-      },
-      `main-subscribe:${setupIntentId}`,
-    ));
+  const subscription = await createSubscription(env, {
+    customer: customerId,
+    items: [{ price: plan.priceId }],
+    trial_period_days: plan.trialPeriodDays || config.trialPeriodDays,
+    default_payment_method: paymentMethodId,
+    payment_settings: {
+      save_default_payment_method: 'on_subscription',
+    },
+    metadata: mergedMetadata,
+  });
 
   const postPurchase = await processMainCheckoutCompleted(
     env,

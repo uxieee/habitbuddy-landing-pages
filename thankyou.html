@@ -555,10 +555,7 @@
     if (params.get('gift') === 'true') {
       document.getElementById('signupMessage').style.display = 'none';
       document.getElementById('giftMessage').style.display = 'block';
-      const titleEl = document.querySelector('.thankyou__title');
-      if (titleEl) {
-        titleEl.textContent = 'Gift sent!';
-      }
+      document.querySelector('.thankyou__title').innerHTML = 'Gift <em>sent</em>!';
     }
 
     // Confetti burst
@@ -580,11 +577,7 @@
       }
 
       // Clean up after animation
-      setTimeout(() => {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-      }, 5000);
+      setTimeout(() => container.innerHTML = '', 5000);
     }
 
     // Fire confetti on load

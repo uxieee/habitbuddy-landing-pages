@@ -1,15 +1,9 @@
 import { createMainSetupIntentForLead } from '../_lib/habitbuddy.js';
 import { readJson, jsonResponse, errorResponse, methodNotAllowed, optionsResponse, unwrapError } from '../_lib/http.js';
-import { getConfig } from '../_lib/config.js';
-import { applyApiSecurity } from '../_lib/security.js';
 
 export async function onRequestPost(context) {
   try {
-    const securityError = await applyApiSecurity(context, { routeKey: '/api/main-payment-element-init' });
-    if (securityError) return securityError;
-
-    const config = getConfig(context.env, context.request);
-    const payload = await readJson(context.request, { maxBytes: config.maxJsonBodyBytes });
+    const payload = await readJson(context.request);
     const result = await createMainSetupIntentForLead(context.env, context.request, payload);
 
     return jsonResponse({
@@ -24,7 +18,7 @@ export async function onRequestPost(context) {
     });
   } catch (error) {
     const parsed = unwrapError(error);
-    return errorResponse(parsed.status, parsed.message);
+    return errorResponse(parsed.status, parsed.message, parsed.details);
   }
 }
 

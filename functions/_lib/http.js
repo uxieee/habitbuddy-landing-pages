@@ -3,84 +3,33 @@ export function jsonResponse(data, status = 200, headers = {}) {
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
-      'Referrer-Policy': 'same-origin',
       ...headers,
     },
   });
 }
 
-export function errorResponse(status, message, details, options = {}) {
-  const includeDetails = options.includeDetails === true;
+export function errorResponse(status, message, details) {
   return jsonResponse(
     {
       success: false,
       error: message,
-      ...(includeDetails && details ? { details } : {}),
+      ...(details ? { details } : {}),
     },
     status,
-    options.headers || {},
   );
 }
 
-function makeHttpError(status, message) {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-}
-
-function hasJsonContentType(request) {
-  const contentType = String(request.headers.get('content-type') || '').toLowerCase();
-  return contentType.includes('application/json');
-}
-
-function parseContentLength(request) {
-  const raw = request.headers.get('content-length');
-  if (!raw) return null;
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return Math.floor(parsed);
-}
-
-export async function readJson(request, options = {}) {
-  const requireJsonContentType = options.requireJsonContentType !== false;
-  const maxBytes = Number.isFinite(options.maxBytes) && options.maxBytes > 0 ? Math.floor(options.maxBytes) : 32768;
-
-  if (requireJsonContentType && !hasJsonContentType(request)) {
-    throw makeHttpError(415, 'Content-Type must be application/json.');
-  }
-
-  const contentLength = parseContentLength(request);
-  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
-    throw makeHttpError(413, 'Request body is too large.');
-  }
-
-  let rawBody = '';
+export async function readJson(request) {
   try {
-    rawBody = await request.text();
-  } catch (_error) {
-    throw makeHttpError(400, 'Invalid request body.');
-  }
-
-  if (!rawBody) {
-    throw makeHttpError(400, 'Request body is required.');
-  }
-
-  const bodySize = new TextEncoder().encode(rawBody).length;
-  if (bodySize > maxBytes) {
-    throw makeHttpError(413, 'Request body is too large.');
-  }
-
-  try {
-    const parsed = JSON.parse(rawBody);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      throw makeHttpError(400, 'Request body must be a JSON object.');
+    const body = await request.json();
+    if (!body || typeof body !== 'object') {
+      throw new Error('Request body must be a JSON object.');
     }
-    return parsed;
+    return body;
   } catch (error) {
-    if (Number.isFinite(error?.status)) throw error;
-    throw makeHttpError(400, 'Invalid JSON body.');
+    const e = new Error('Invalid JSON body.');
+    e.status = 400;
+    throw e;
   }
 }
 

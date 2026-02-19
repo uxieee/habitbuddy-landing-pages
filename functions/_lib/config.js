@@ -2,9 +2,6 @@ const DEFAULTS = {
   GHL_API_BASE: 'https://services.leadconnectorhq.com',
   STRIPE_API_BASE: 'https://api.stripe.com/v1',
   STRIPE_PUBLISHABLE_KEY: '',
-  TURNSTILE_SITE_KEY: '',
-  TURNSTILE_SECRET_KEY: '',
-  TURNSTILE_ENFORCEMENT: '',
 
   GHL_LOCATION_ID: '3ouY0YkB0fLDFs5nb8UG',
   GHL_PIPELINE_ID: 'fQzLboVKi639klKBI64N',
@@ -23,12 +20,6 @@ const DEFAULTS = {
   HB_PLAN_CATALOG_JSON: '',
 
   TRIAL_PERIOD_DAYS: '7',
-  MAX_JSON_BODY_BYTES: '32768',
-  RATE_LIMIT_WINDOW_SECONDS: '60',
-  RATE_LIMIT_MAX_REQUESTS: '30',
-  ALLOWED_ORIGINS: '',
-  REQUIRE_ORIGIN_HEADER: 'false',
-  HEALTH_STATUS_KEY: '',
 
   GHL_CF_CONTACT_HB_RECIPIENT_NAME: 'KkAwb02d4X3nV5OSwo3x',
   GHL_CF_CONTACT_HB_RECIPIENT_PHONE: 'WJIGSxaDOfRjqqfURgX6',
@@ -66,38 +57,6 @@ function toPositiveInteger(value, fallbackValue) {
   const n = Number(value);
   if (Number.isFinite(n) && n > 0) return Math.floor(n);
   return fallbackValue;
-}
-
-function toBoolean(value, fallbackValue = false) {
-  if (typeof value === 'boolean') return value;
-  const raw = cleanText(value).toLowerCase();
-  if (!raw) return fallbackValue;
-  if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
-  if (['0', 'false', 'no', 'off'].includes(raw)) return false;
-  return fallbackValue;
-}
-
-function normalizeOrigin(value) {
-  const raw = cleanText(value);
-  if (!raw) return '';
-  try {
-    return new URL(raw).origin;
-  } catch (_error) {
-    return '';
-  }
-}
-
-function parseCsvOrigins(value) {
-  const raw = cleanText(value);
-  if (!raw) return [];
-  return raw
-    .split(',')
-    .map((item) => normalizeOrigin(item))
-    .filter(Boolean);
-}
-
-function uniqueStrings(values = []) {
-  return [...new Set((values || []).filter(Boolean))];
 }
 
 function normalizeAliases(key, aliases = []) {
@@ -214,32 +173,8 @@ function buildPlanCatalog(values, rawCatalogJson) {
 
 export function getConfig(env, request) {
   const requestUrl = new URL(request.url);
-  const publicBaseOrigin = normalizeOrigin(readEnv(env, 'PUBLIC_BASE_URL'));
-  const origin = publicBaseOrigin || requestUrl.origin;
+  const origin = readEnv(env, 'PUBLIC_BASE_URL') || requestUrl.origin;
   const trialPeriodDays = toPositiveInteger(readEnv(env, 'TRIAL_PERIOD_DAYS'), Number(DEFAULTS.TRIAL_PERIOD_DAYS));
-  const maxJsonBodyBytes = toPositiveInteger(readEnv(env, 'MAX_JSON_BODY_BYTES'), Number(DEFAULTS.MAX_JSON_BODY_BYTES));
-  const rateLimitWindowSeconds = toPositiveInteger(
-    readEnv(env, 'RATE_LIMIT_WINDOW_SECONDS'),
-    Number(DEFAULTS.RATE_LIMIT_WINDOW_SECONDS),
-  );
-  const rateLimitMaxRequests = toPositiveInteger(
-    readEnv(env, 'RATE_LIMIT_MAX_REQUESTS'),
-    Number(DEFAULTS.RATE_LIMIT_MAX_REQUESTS),
-  );
-  const allowedOrigins = uniqueStrings([
-    ...parseCsvOrigins(readEnv(env, 'ALLOWED_ORIGINS')),
-    publicBaseOrigin,
-    requestUrl.origin,
-  ]);
-  const requireOriginHeader = toBoolean(readEnv(env, 'REQUIRE_ORIGIN_HEADER'), false);
-
-  const turnstileSiteKey = readEnv(env, 'TURNSTILE_SITE_KEY');
-  const turnstileSecretKey = readEnv(env, 'TURNSTILE_SECRET_KEY');
-  const turnstileEnforcementRaw = cleanText(readEnv(env, 'TURNSTILE_ENFORCEMENT')).toLowerCase();
-  const defaultTurnstileEnforcement = turnstileSecretKey && turnstileSiteKey ? 'required' : 'off';
-  const turnstileEnforcement = ['off', 'optional', 'required'].includes(turnstileEnforcementRaw)
-    ? turnstileEnforcementRaw
-    : defaultTurnstileEnforcement;
 
   const baseValues = {
     stripeMainTrialPriceId: readEnv(env, 'STRIPE_MAIN_TRIAL_PRICE_ID'),
@@ -259,16 +194,6 @@ export function getConfig(env, request) {
     ghlApiBase: readEnv(env, 'GHL_API_BASE'),
     stripeApiBase: readEnv(env, 'STRIPE_API_BASE'),
     stripePublishableKey: readEnv(env, 'STRIPE_PUBLISHABLE_KEY'),
-    turnstileSiteKey,
-    turnstileSecretKey,
-    turnstileEnforcement,
-
-    maxJsonBodyBytes,
-    rateLimitWindowSeconds,
-    rateLimitMaxRequests,
-    allowedOrigins,
-    requireOriginHeader,
-    healthStatusKey: readEnv(env, 'HEALTH_STATUS_KEY'),
     ghlPrivateToken: readEnv(env, 'GHL_PRIVATE_TOKEN'),
     stripeSecretKey: readEnv(env, 'STRIPE_SECRET_KEY'),
     stripeWebhookSecret: readEnv(env, 'STRIPE_WEBHOOK_SECRET'),
