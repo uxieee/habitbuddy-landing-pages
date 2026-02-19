@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HabitBuddy — The Daily Text That Builds Habits That Stick</title>
-  <meta name="description" content="500+ people use HabitBuddy's daily SMS check-ins to build habits that actually stick. No app needed. Just one text a day.">
+  <title>Habit Buddy — The Daily Text That Builds Habits That Stick</title>
+  <meta name="description" content="500+ people use Habit Buddy's daily SMS check-ins to build habits that actually stick. No app needed. Just one text a day.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -592,30 +592,25 @@
 
     /* ===== GIFT SPOTLIGHT ===== */
     .gift-spotlight {
-      padding: 28px 0 88px;
+      padding: 56px 0 82px;
       position: relative;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
-    .gift-spotlight::before,
-    .gift-spotlight::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      height: 1px;
-      background: var(--border);
-      opacity: 0.85;
-    }
-    .gift-spotlight::before { top: 0; }
-    .gift-spotlight::after { bottom: 0; }
     .gift-spotlight__panel {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
-      gap: 28px;
-      align-items: start;
-      padding: 38px 0;
+      gap: 48px;
+      align-items: center;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
     }
-    .gift-spotlight__content { padding-right: 4px; }
+    .gift-spotlight__content { padding-right: 0; }
     .gift-spotlight__content .section-label {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .gift-spotlight__title {
       font-family: var(--font-display);
@@ -629,9 +624,8 @@
     }
     .gift-spotlight__sub {
       font-size: 16px;
-      color: var(--text-primary);
-      opacity: 0.8;
-      margin-bottom: 24px;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
       max-width: 54ch;
     }
     .gift-spotlight__actions {
@@ -643,17 +637,20 @@
     .gift-spotlight__meta {
       font-size: 13px;
       color: var(--text-muted);
+      margin-top: 14px;
     }
     .gift-spotlight__plans {
       display: grid;
-      gap: 12px;
-      border-left: 1px solid var(--border);
-      padding-left: 24px;
+      gap: 16px;
+      border-left: none;
+      padding-left: 0;
+      padding-top: 0;
+      margin: 0;
     }
     .gift-plan {
       border-bottom: 1px solid var(--border);
       background: transparent;
-      padding: 0 0 14px;
+      padding: 0 0 16px;
     }
     .gift-plan:last-child { border-bottom: none; padding-bottom: 0; }
     .gift-plan__top {
@@ -1397,13 +1394,13 @@
       .hero__actions .btn-primary,
       .hero__actions .btn-secondary { width: 100%; justify-content: center; }
       .sms-banner__card { padding: 40px 24px; }
-      .gift-spotlight { padding: 16px 0 64px; }
-      .gift-spotlight__panel { padding: 22px 0; }
+      .gift-spotlight { padding: 38px 0 64px; }
+      .gift-spotlight__panel { padding: 0; gap: 24px; }
+      .gift-spotlight__content { padding-right: 0; }
       .gift-spotlight__plans {
-        border-left: none;
-        border-top: 1px solid var(--border);
+        border-top: none;
         padding-left: 0;
-        padding-top: 18px;
+        padding-top: 0;
       }
       .gift-spotlight__actions { flex-direction: column; align-items: stretch; }
       .gift-spotlight__actions .btn-primary,
@@ -1429,7 +1426,7 @@
   <!-- ===== NAV ===== -->
   <nav class="nav" id="nav">
     <div class="nav__inner">
-      <a href="/" class="nav__logo">Habit<span>Buddy</span></a>
+      <a href="/" class="nav__logo">Habit <span>Buddy</span></a>
       <div class="nav__mobile-actions">
         <button class="theme-toggle theme-toggle--mobile" id="themeToggleMobile" data-theme-toggle type="button" aria-label="Switch theme">
           <span class="theme-toggle__icon" aria-hidden="true">◐</span>
@@ -1496,7 +1493,7 @@
             <div class="phone-screen">
               <div class="phone-notch"></div>
               <div class="sms-header">
-                <div class="sms-header__name">HabitBuddy</div>
+                <div class="sms-header__name">Habit Buddy</div>
                 <div class="sms-header__status">Active now</div>
               </div>
               <div class="sms-time">Today, 7:30 AM</div>
@@ -1584,7 +1581,7 @@
       <div class="sms-banner__card">
         <div class="sms-banner__stat">92%</div>
         <div class="sms-banner__text">of text messages get read within 3 minutes.</div>
-        <div class="sms-banner__sub">Apps have a 3% daily open rate. That's why HabitBuddy lives in your messages, not behind another icon you'll ignore.</div>
+        <div class="sms-banner__sub">Apps have a 3% daily open rate. That's why Habit Buddy lives in your messages, not behind another icon you'll ignore.</div>
       </div>
     </div>
   </section>
@@ -1594,14 +1591,14 @@
     <div class="container">
       <div class="gift-spotlight__panel reveal">
         <div class="gift-spotlight__content">
-          <div class="section-label">Gift HabitBuddy</div>
-          <h2 class="gift-spotlight__title">Help someone start strong with a <em>HabitBuddy pass</em>.</h2>
+          <div class="section-label">Gift Habit Buddy</div>
+          <h2 class="gift-spotlight__title">Help someone start strong with a <em>Habit Buddy pass</em>.</h2>
           <p class="gift-spotlight__sub">
             Perfect for birthdays, fresh starts, and people who say "I'll start Monday." You can gift 1 or 3 months in minutes.
           </p>
           <div class="gift-spotlight__actions">
             <a href="giftahabitbuddy.html" class="btn-primary">
-              Gift HabitBuddy
+              Gift Habit Buddy
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
             </a>
             <a href="giftahabitbuddy.html#giftForm" class="btn-secondary">Customize the gift message</a>
@@ -1633,7 +1630,7 @@
   <section class="section">
     <div class="container">
       <div class="reveal" style="text-align:center;">
-        <div class="section-label" style="justify-content:center;">Why HabitBuddy</div>
+        <div class="section-label" style="justify-content:center;">Why Habit Buddy</div>
         <h2 class="section-title">You've tried everything else.</h2>
         <p class="section-subtitle" style="margin:0 auto;">Here's why SMS-based accountability is different.</p>
       </div>
@@ -1645,7 +1642,7 @@
               <th>Habit Apps</th>
               <th>Willpower</th>
               <th>Human Coach</th>
-              <th>HabitBuddy</th>
+              <th>Habit Buddy</th>
             </tr>
           </thead>
           <tbody>
@@ -1708,7 +1705,7 @@
       <div class="testimonials__grid">
         <div class="testimonial-card reveal">
           <div class="testimonial-card__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="testimonial-card__text">"I've tried every habit app out there and none of them stuck. HabitBuddy texts me, and I actually respond. Something about it being a real conversation changed everything."</p>
+          <p class="testimonial-card__text">"I've tried every habit app out there and none of them stuck. Habit Buddy texts me, and I actually respond. Something about it being a real conversation changed everything."</p>
           <div class="testimonial-card__author">
             <div class="testimonial-card__avatar">D</div>
             <div>
@@ -1750,7 +1747,7 @@
         </div>
         <div class="testimonial-card reveal">
           <div class="testimonial-card__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="testimonial-card__text">"The milestone celebrations are my favorite part. When I hit 30 days of journaling, HabitBuddy made me feel like I'd won an Olympic medal. That dopamine hit is real."</p>
+          <p class="testimonial-card__text">"The milestone celebrations are my favorite part. When I hit 30 days of journaling, Habit Buddy made me feel like I'd won an Olympic medal. That dopamine hit is real."</p>
           <div class="testimonial-card__author">
             <div class="testimonial-card__avatar" style="background:linear-gradient(135deg, #34D399, #3B82F6);">A</div>
             <div>
@@ -1771,7 +1768,7 @@
         </div>
         <div class="testimonial-card reveal">
           <div class="testimonial-card__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="testimonial-card__text">"As someone with ADHD, apps don't work for me. I forget they exist. But texts? I read every single one. HabitBuddy meets me where I already am."</p>
+          <p class="testimonial-card__text">"As someone with ADHD, apps don't work for me. I forget they exist. But texts? I read every single one. Habit Buddy meets me where I already am."</p>
           <div class="testimonial-card__author">
             <div class="testimonial-card__avatar" style="background:linear-gradient(135deg, #F59E0B, #EF4444);">K</div>
             <div>
@@ -1811,7 +1808,7 @@
         <div class="feature-card reveal">
           <div class="feature-card__icon">&#129309;</div>
           <h3 class="feature-card__title">Extra Support on Hard Days</h3>
-          <p class="feature-card__desc">When you're struggling, HabitBuddy detects it and sends extra encouragement exactly when you need it.</p>
+          <p class="feature-card__desc">When you're struggling, Habit Buddy detects it and sends extra encouragement exactly when you need it.</p>
         </div>
         <div class="feature-card reveal">
           <div class="feature-card__icon">&#128161;</div>
@@ -1826,7 +1823,7 @@
         <div class="feature-card reveal">
           <div class="feature-card__icon">&#9889;</div>
           <h3 class="feature-card__title">Instant Replies, 24/7</h3>
-          <p class="feature-card__desc">Text back anytime and get a thoughtful response. Night owl or early bird, HabitBuddy is always there.</p>
+          <p class="feature-card__desc">Text back anytime and get a thoughtful response. Night owl or early bird, Habit Buddy is always there.</p>
         </div>
         <div class="feature-card reveal">
           <div class="feature-card__icon">&#127881;</div>
@@ -1888,7 +1885,7 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
         </a>
         <a href="giftahabitbuddy.html" style="display:inline-block;margin-top:12px;font-size:14px;color:var(--text-secondary);text-decoration:underline;text-underline-offset:3px;">
-          Want to gift this? Send a HabitBuddy pass
+          Want to gift this? Send a Habit Buddy pass
         </a>
         <p style="margin-top:12px;font-size:13px;color:var(--text-muted);">Card required for trial setup</p>
       </div>
@@ -1906,9 +1903,9 @@
         <div class="founder__photo">S</div>
         <div>
           <h3 class="founder__name">Sam</h3>
-          <p class="founder__role">Founder, HabitBuddy &middot; 20+ Years in Habit Coaching</p>
+          <p class="founder__role">Founder, Habit Buddy &middot; 20+ Years in Habit Coaching</p>
           <p class="founder__quote">
-            "I spent two decades helping people build better habits, and I kept seeing the same thing: people would download an app, use it for a week, and forget it existed. But when I started texting my clients directly, something changed. They replied. They showed up. They stuck with it. That's why I built HabitBuddy &mdash; to bring that same personal, SMS-based support to everyone."
+            "I spent two decades helping people build better habits, and I kept seeing the same thing: people would download an app, use it for a week, and forget it existed. But when I started texting my clients directly, something changed. They replied. They showed up. They stuck with it. That's why I built Habit Buddy &mdash; to bring that same personal, SMS-based support to everyone."
           </p>
         </div>
       </div>
@@ -1925,20 +1922,20 @@
       <div class="faq__list">
         <div class="faq-item reveal">
           <button class="faq-item__q">
-            How much does HabitBuddy cost?
+            How much does Habit Buddy cost?
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
           </button>
           <div class="faq-item__a">
-            <p>HabitBuddy starts with a free 7-day trial with secure card setup. After that, Max Support is $29/month unless you cancel before day 7. Most members say it costs less than one coffee a week for daily, personalized support.</p>
+            <p>Habit Buddy starts with a free 7-day trial with secure card setup. After that, Max Support is $29/month unless you cancel before day 7. Most members say it costs less than one coffee a week for daily, personalized support.</p>
           </div>
         </div>
         <div class="faq-item reveal">
           <button class="faq-item__q">
-            Is HabitBuddy a real person or AI?
+            Is Habit Buddy a real person or AI?
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
           </button>
           <div class="faq-item__a">
-            <p>HabitBuddy combines advanced AI with the principles of real habit coaching. It's trained on 20+ years of habit coaching experience to deliver personalized, human-feeling conversations that adapt to you.</p>
+            <p>Habit Buddy combines advanced AI with the principles of real habit coaching. It's trained on 20+ years of habit coaching experience to deliver personalized, human-feeling conversations that adapt to you.</p>
           </div>
         </div>
         <div class="faq-item reveal">
@@ -1956,7 +1953,7 @@
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
           </button>
           <div class="faq-item__a">
-            <p>Habit apps require you to remember to open them. HabitBuddy comes to you via text message &mdash; a channel you already check dozens of times a day. It's the difference between "I should check my app" and "oh, I just got a text." That's why 87% of our members are still going strong after 30 days.</p>
+            <p>Habit apps require you to remember to open them. Habit Buddy comes to you via text message &mdash; a channel you already check dozens of times a day. It's the difference between "I should check my app" and "oh, I just got a text." That's why 87% of our members are still going strong after 30 days.</p>
           </div>
         </div>
         <div class="faq-item reveal">
@@ -1983,7 +1980,7 @@
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
           </button>
           <div class="faq-item__a">
-            <p>Anything you want to do consistently: exercise, meditation, reading, hydration, journaling, sleep routines, study habits, creative practice &mdash; you name it. HabitBuddy adapts to your specific goals.</p>
+            <p>Anything you want to do consistently: exercise, meditation, reading, hydration, journaling, sleep routines, study habits, creative practice &mdash; you name it. Habit Buddy adapts to your specific goals.</p>
           </div>
         </div>
         <div class="faq-item reveal">
@@ -1992,7 +1989,7 @@
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
           </button>
           <div class="faq-item__a">
-            <p>HabitBuddy detects when you're struggling and adjusts its approach. On hard days, it provides extra encouragement, scaled-back goals, and supportive check-ins. It's not about perfection &mdash; it's about showing up.</p>
+            <p>Habit Buddy detects when you're struggling and adjusts its approach. On hard days, it provides extra encouragement, scaled-back goals, and supportive check-ins. It's not about perfection &mdash; it's about showing up.</p>
           </div>
         </div>
       </div>
@@ -2023,9 +2020,9 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__inner">
-        <p class="footer__copy">&copy; 2026 HabitBuddy. All rights reserved.</p>
+        <p class="footer__copy">&copy; 2026 Habit Buddy. All rights reserved.</p>
         <div class="footer__links">
-          <a href="giftahabitbuddy.html">Gift HabitBuddy</a>
+          <a href="giftahabitbuddy.html">Gift Habit Buddy</a>
           <a href="privacy.html">Privacy Policy</a>
           <a href="terms.html">Terms of Service</a>
           <a href="mailto:support@tryhabitbuddy.com">Contact</a>
