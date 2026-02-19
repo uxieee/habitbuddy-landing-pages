@@ -46,6 +46,7 @@
       --text-muted: #B8B1C5;
       --phone-text-primary: #F5F3EF;
       --phone-text-muted: #B8B1C5;
+      --step-number-color: #A6692D;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -73,6 +74,7 @@
       --text-muted: #4F495F;
       --phone-text-primary: #F5F3EF;
       --phone-text-muted: #B8B1C5;
+      --step-number-color: #B56D24;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -517,8 +519,7 @@
     .step-card__number {
       font-family: var(--font-display);
       font-size: 64px;
-      color: var(--accent-amber);
-      opacity: 0.15;
+      color: var(--step-number-color);
       position: absolute;
       top: 16px; right: 24px;
       line-height: 1;
@@ -543,7 +544,6 @@
     .step-card__desc {
       font-size: 15px;
       color: var(--text-primary);
-      opacity: 0.82;
       line-height: 1.7;
     }
 
