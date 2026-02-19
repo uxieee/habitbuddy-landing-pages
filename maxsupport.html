@@ -40,8 +40,8 @@
       --green: #34D399;
       --green-soft: #34D39920;
       --text-primary: #F5F3EF;
-      --text-secondary: #9B97A3;
-      --text-muted: #878191;
+      --text-secondary: #B8B2C4;
+      --text-muted: #A39DB2;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -59,8 +59,8 @@
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
       --text-primary: #1D1A24;
-      --text-secondary: #5A5467;
-      --text-muted: #6A6376;
+      --text-secondary: #4C465C;
+      --text-muted: #60596F;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -646,16 +646,13 @@
     .faq-item__a {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease;
-    }
-    .faq-item.active .faq-item__a {
-      max-height: 200px;
-      padding-bottom: 20px;
+      transition: max-height 0.4s ease, padding 0.25s ease;
     }
     .faq-item__a p {
       font-size: 14px;
       color: var(--text-secondary);
       line-height: 1.8;
+      padding-bottom: 20px;
     }
 
     /* ===== GUARANTEE ===== */
@@ -1208,12 +1205,36 @@
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
     // FAQ
-    document.querySelectorAll('.faq-item__q').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.parentElement;
+    const faqItems = Array.from(document.querySelectorAll('.faq-item'));
+    faqItems.forEach((item, index) => {
+      const button = item.querySelector('.faq-item__q');
+      const panel = item.querySelector('.faq-item__a');
+      const panelId = 'faq-answer-' + index;
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-controls', panelId);
+      panel.id = panelId;
+      panel.style.maxHeight = '0px';
+
+      button.addEventListener('click', () => {
         const wasActive = item.classList.contains('active');
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-        if (!wasActive) item.classList.add('active');
+        faqItems.forEach((entry) => {
+          entry.classList.remove('active');
+          const entryPanel = entry.querySelector('.faq-item__a');
+          const entryButton = entry.querySelector('.faq-item__q');
+          entryPanel.style.maxHeight = '0px';
+          entryButton.setAttribute('aria-expanded', 'false');
+        });
+
+        if (!wasActive) {
+          item.classList.add('active');
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+          button.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.faq-item.active .faq-item__a').forEach((panel) => {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
       });
     });
 

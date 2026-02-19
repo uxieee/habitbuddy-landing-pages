@@ -40,8 +40,10 @@
       --green: #34D399;
       --green-soft: #34D39920;
       --text-primary: #F5F3EF;
-      --text-secondary: #9B97A3;
-      --text-muted: #878191;
+      --text-secondary: #B8B2C4;
+      --text-muted: #A39DB2;
+      --phone-text-primary: #F5F3EF;
+      --phone-text-muted: #A39DB2;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -63,8 +65,10 @@
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
       --text-primary: #1D1A24;
-      --text-secondary: #5A5467;
-      --text-muted: #6A6376;
+      --text-secondary: #4C465C;
+      --text-muted: #60596F;
+      --phone-text-primary: #F5F3EF;
+      --phone-text-muted: #A39DB2;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -369,7 +373,7 @@
     .sms-header__name {
       font-weight: 600;
       font-size: 16px;
-      color: var(--text-primary);
+      color: var(--phone-text-primary);
     }
     .sms-header__status {
       font-size: 11px;
@@ -398,7 +402,7 @@
     }
     .sms-time {
       font-size: 10px;
-      color: var(--text-muted);
+      color: var(--phone-text-muted);
       margin-bottom: 12px;
       padding-left: 4px;
     }
@@ -548,6 +552,98 @@
       color: var(--text-secondary);
       max-width: 500px;
       margin: 0 auto;
+    }
+
+    /* ===== GIFT SPOTLIGHT ===== */
+    .gift-spotlight {
+      padding: 20px 0 80px;
+    }
+    .gift-spotlight__panel {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: stretch;
+      padding: 38px;
+      border-radius: 24px;
+      border: 1px solid var(--amber-glow);
+      background:
+        radial-gradient(circle at 88% -8%, #E8923E24 0%, transparent 45%),
+        linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+    }
+    .gift-spotlight__content .section-label {
+      margin-bottom: 12px;
+    }
+    .gift-spotlight__title {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 42px);
+      line-height: 1.12;
+      margin-bottom: 14px;
+    }
+    .gift-spotlight__title em {
+      color: var(--amber);
+      font-style: italic;
+    }
+    .gift-spotlight__sub {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      max-width: 54ch;
+    }
+    .gift-spotlight__actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .gift-spotlight__meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .gift-spotlight__plans {
+      display: grid;
+      gap: 12px;
+    }
+    .gift-plan {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-deep);
+      padding: 14px 16px;
+    }
+    .gift-plan__top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .gift-plan__name {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .gift-plan__price {
+      font-size: 17px;
+      color: var(--amber);
+      font-weight: 700;
+    }
+    .gift-plan__desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .gift-plan--featured {
+      border-color: var(--amber-glow);
+      background: linear-gradient(135deg, var(--amber-soft), transparent 80%);
+    }
+    .gift-plan__tag {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
     }
 
     /* ===== COMPARISON TABLE ===== */
@@ -935,14 +1031,11 @@
       overflow: hidden;
       transition: max-height 0.4s ease, padding 0.3s;
     }
-    .faq-item.active .faq-item__a {
-      max-height: 300px;
-      padding-bottom: 24px;
-    }
     .faq-item__a p {
       font-size: 15px;
       color: var(--text-secondary);
       line-height: 1.8;
+      padding-bottom: 24px;
     }
 
     /* ===== FOUNDER ===== */
@@ -1083,6 +1176,7 @@
       .how-it-works__grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
       .features__grid { grid-template-columns: 1fr 1fr; }
       .testimonials__grid { grid-template-columns: 1fr; }
+      .gift-spotlight__panel { grid-template-columns: 1fr; }
       .founder__card { grid-template-columns: 1fr; text-align: center; }
       .founder__photo { margin: 0 auto; }
       .stats-bar__inner { grid-template-columns: repeat(2, 1fr); }
@@ -1110,6 +1204,11 @@
       .founder__card { padding: 32px 24px; }
       .hero__actions { flex-direction: column; }
       .sms-banner__card { padding: 40px 24px; }
+      .gift-spotlight { padding-top: 10px; }
+      .gift-spotlight__panel { padding: 28px 22px; }
+      .gift-spotlight__actions { flex-direction: column; align-items: stretch; }
+      .gift-spotlight__actions .btn-primary,
+      .gift-spotlight__actions .btn-secondary { width: 100%; justify-content: center; }
     }
     @media (max-width: 480px) {
       .stats-bar__inner { grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -1273,6 +1372,46 @@
         <div class="sms-banner__stat">92%</div>
         <div class="sms-banner__text">of text messages get read within 3 minutes.</div>
         <div class="sms-banner__sub">Apps have a 3% daily open rate. That's why HabitBuddy lives in your messages, not behind another icon you'll ignore.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GIFT SPOTLIGHT ===== -->
+  <section class="gift-spotlight">
+    <div class="container">
+      <div class="gift-spotlight__panel reveal">
+        <div class="gift-spotlight__content">
+          <div class="section-label">Gift HabitBuddy</div>
+          <h2 class="gift-spotlight__title">Help someone start strong with a <em>HabitBuddy pass</em>.</h2>
+          <p class="gift-spotlight__sub">
+            Perfect for birthdays, fresh starts, and people who say "I'll start Monday." You can gift 1 or 3 months in minutes.
+          </p>
+          <div class="gift-spotlight__actions">
+            <a href="giftahabitbuddy.html" class="btn-primary">
+              Gift HabitBuddy
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
+            </a>
+            <a href="giftahabitbuddy.html#giftForm" class="btn-secondary">Customize the gift message</a>
+          </div>
+          <p class="gift-spotlight__meta">One-time payment. Instant recipient activation after checkout.</p>
+        </div>
+        <div class="gift-spotlight__plans">
+          <div class="gift-plan">
+            <div class="gift-plan__top">
+              <span class="gift-plan__name">1 Month Pass</span>
+              <span class="gift-plan__price">$29.99</span>
+            </div>
+            <p class="gift-plan__desc">30 days of daily personalized SMS support.</p>
+          </div>
+          <div class="gift-plan gift-plan--featured">
+            <div class="gift-plan__top">
+              <span class="gift-plan__name">3 Month Pass</span>
+              <span class="gift-plan__price">$79.99</span>
+            </div>
+            <p class="gift-plan__desc">90 days of support for stronger habit momentum.</p>
+            <span class="gift-plan__tag">Best Value</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1774,12 +1913,36 @@
     });
 
     // FAQ accordion
-    document.querySelectorAll('.faq-item__q').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.parentElement;
+    const faqItems = Array.from(document.querySelectorAll('.faq-item'));
+    faqItems.forEach((item, index) => {
+      const button = item.querySelector('.faq-item__q');
+      const panel = item.querySelector('.faq-item__a');
+      const panelId = 'faq-answer-' + index;
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-controls', panelId);
+      panel.id = panelId;
+      panel.style.maxHeight = '0px';
+
+      button.addEventListener('click', () => {
         const wasActive = item.classList.contains('active');
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-        if (!wasActive) item.classList.add('active');
+        faqItems.forEach((entry) => {
+          entry.classList.remove('active');
+          const entryPanel = entry.querySelector('.faq-item__a');
+          const entryButton = entry.querySelector('.faq-item__q');
+          entryPanel.style.maxHeight = '0px';
+          entryButton.setAttribute('aria-expanded', 'false');
+        });
+
+        if (!wasActive) {
+          item.classList.add('active');
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+          button.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.faq-item.active .faq-item__a').forEach((panel) => {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
       });
     });
 
