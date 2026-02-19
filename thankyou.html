@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to HabitBuddy!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var storageKey = 'habitbuddy-theme';
+      var theme = 'dark';
+      try {
+        var savedTheme = localStorage.getItem(storageKey);
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          theme = savedTheme;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (error) {
+        // Ignore localStorage access issues and keep dark mode default.
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-deep: #0C0B0F;
+      --bg-card: #16151A;
+      --bg-elevated: #1E1D25;
+      --amber: #E8923E;
+      --amber-glow: #E8923E40;
+      --amber-soft: #E8923E15;
+      --green: #34D399;
+      --green-soft: #34D39920;
+      --green-glow: #34D39940;
+      --text-primary: #F5F3EF;
+      --text-secondary: #9B97A3;
+      --text-muted: #878191;
+      --border: #2A2832;
+      --border-light: #3A3845;
+      --nav-bg: #0C0B0Fcc;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body: 'Space Grotesk', system-ui, sans-serif;
+      --radius: 16px;
+    }
+
+    :root[data-theme="light"] {
+      --bg-deep: #F6F3ED;
+      --bg-card: #FFFFFF;
+      --bg-elevated: #FBF8F2;
+      --amber-soft: #E8923E22;
+      --green-soft: #34D39926;
+      --green-glow: #34D39926;
+      --text-primary: #1D1A24;
+      --text-secondary: #5A5467;
+      --text-muted: #6A6376;
+      --border: #DAD3E2;
+      --border-light: #C8BED4;
+      --nav-bg: #F6F3EDe0;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* Ambient lighting */
+    .ambient-orb {
+      position: fixed; border-radius: 50%; filter: blur(140px);
+      pointer-events: none; z-index: 0;
+    }
+    .ambient-orb--green {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--green) 0%, transparent 70%);
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.1;
+    }
+    .ambient-orb--amber {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      opacity: 0.06;
+    }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* NAV (minimal) */
+    .nav {
+      padding: 20px 0;
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav__inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav__logo {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .nav__logo span { color: var(--amber); }
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .theme-toggle:hover {
+      color: var(--text-primary);
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+    .theme-toggle__icon { font-size: 14px; line-height: 1; }
+
+    /* MAIN CONTENT */
+    .thankyou {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0 80px;
+    }
+    .thankyou__content {
+      text-align: center;
+    }
+
+    /* Animated check */
+    .success-check {
+      width: 100px; height: 100px;
+      margin: 0 auto 32px;
+      position: relative;
+    }
+    .success-check__circle {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: var(--green-soft);
+      border: 2px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: scaleIn 0.5s ease both;
+      box-shadow: 0 0 60px var(--green-glow);
+    }
+    .success-check__icon {
+      width: 40px; height: 40px;
+      stroke: var(--green);
+      stroke-width: 3;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .success-check__icon path {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: drawCheck 0.6s ease 0.4s forwards;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes drawCheck {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Confetti particles */
+    .confetti {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+    .confetti__piece {
+      position: absolute;
+      width: 10px; height: 10px;
+      top: -10px;
+      animation: confettiFall linear forwards;
+      opacity: 0;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .thankyou__title {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 52px);
+      line-height: 1.1;
+      margin-bottom: 16px;
+      animation: fadeInUp 0.6s ease 0.5s both;
+    }
+    .thankyou__title em {
+      font-style: italic;
+      color: var(--green);
+    }
+    .thankyou__sub {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      animation: fadeInUp 0.6s ease 0.7s both;
+    }
+
+    /* Next steps */
+    .next-steps {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: left;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.6s ease 0.9s both;
+    }
+    .next-steps__title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .next-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .next-step:last-child { border-bottom: none; }
+    .next-step__number {
+      width: 36px; height: 36px;
+      background: var(--amber-soft);
+      border: 1px solid var(--amber-glow);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--amber);
+      flex-shrink: 0;
+    }
+    .next-step__text h3 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    .next-step__text p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Phone mockup preview */
+    .preview-sms {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 360px;
+      margin: 0 auto 40px;
+      animation: fadeInUp 0.6s ease 1.1s both;
+    }
+    .preview-sms__header {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .preview-sms__bubble {
+      background: var(--bg-elevated);
+      padding: 14px 18px;
+      border-radius: 18px;
+      border-bottom-left-radius: 6px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+    .preview-sms__typing {
+      display: flex;
+      gap: 4px;
+      padding: 12px 18px;
+      margin-top: 8px;
+    }
+    .preview-sms__typing span {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing 1.4s infinite;
+    }
+    .preview-sms__typing span:nth-child(2) { animation-delay: 0.2s; }
+    .preview-sms__typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+      30% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Share & actions */
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s ease 1.3s both;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--amber);
+      color: #0C0B0F;
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: all 0.25s;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--amber-glow);
+    }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 15px;
+      border-radius: 100px;
+      text-decoration: none;
+      border: 1px solid var(--border-light);
+      transition: all 0.25s;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .btn-outline:hover {
+      border-color: var(--text-secondary);
+      background: var(--bg-card);
+    }
+
+    /* Gift variant */
+    .gift-message {
+      background: linear-gradient(135deg, #F43F5E15, transparent 60%);
+      border: 1px solid #F43F5E30;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      animation: fadeInUp 0.6s ease 0.8s both;
+    }
+    .gift-message strong { color: #F43F5E; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    .footer__copy { font-size: 13px; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      .next-steps { padding: 28px; }
+      .actions { flex-direction: column; align-items: center; }
+      .theme-toggle__text { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .preview-sms__typing span,
+      .success-check__icon path,
+      .confetti-piece {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-orb ambient-orb--green"></div>
+  <div class="ambient-orb ambient-orb--amber"></div>
+
+  <!-- Confetti canvas -->
+  <div class="confetti" id="confetti"></div>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Habit<span>Buddy</span></a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+        <span class="theme-toggle__text" id="themeToggleLabel">Light mode</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="thankyou">
+    <div class="container">
+      <div class="thankyou__content">
+        <!-- Animated check -->
+        <div class="success-check">
+          <div class="success-check__circle">
+            <svg class="success-check__icon" viewBox="0 0 40 40">
+              <path d="M10 20 L18 28 L30 12"/>
+            </svg>
+          </div>
+        </div>
+
+        <h1 class="thankyou__title">
+          You're <em>in</em>!
+        </h1>
+
+        <!-- Standard signup message -->
+        <p class="thankyou__sub" id="signupMessage">
+          Your free trial has started. Check your phone &mdash; your first text from HabitBuddy is on its way right now.
+        </p>
+
+        <!-- Gift message (hidden by default) -->
+        <div class="gift-message" id="giftMessage" style="display:none;">
+          <strong>Gift sent!</strong> Your recipient will receive their first HabitBuddy text with your personal message. You'll get a confirmation email shortly.
+        </div>
+
+        <!-- Preview of incoming text -->
+        <div class="preview-sms">
+          <div class="preview-sms__header">Incoming from HabitBuddy</div>
+          <div class="preview-sms__bubble">
+            Hey! I'm your new HabitBuddy. I'm here to help you build habits that actually stick. First things first &mdash; what's the one habit you want to focus on? Just reply to this text and we'll get started.
+          </div>
+          <div class="preview-sms__typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- What happens next -->
+        <div class="next-steps">
+          <h2 class="next-steps__title">What happens next</h2>
+          <div class="next-step">
+            <div class="next-step__number">1</div>
+            <div class="next-step__text">
+              <h3>Check your phone</h3>
+              <p>Your first HabitBuddy text should arrive within the next few minutes. Reply to get started.</p>
+            </div>
+          </div>
+          <div class="next-step">
+            <div class="next-step__number">2</div>
+            <div class="next-step__text">
+              <h3>Tell us your habit</h3>
+              <p>Reply with what you want to work on. Exercise, meditation, reading &mdash; anything goes.</p>
+            </div>
+          </div>
+          <div class="next-step">
+            <div class="next-step__number">3</div>
+            <div class="next-step__text">
+              <h3>Show up tomorrow</h3>
+              <p>Your daily check-in arrives at the time you chose. Just reply like you would to a friend.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a href="index.html" class="btn-primary">
+            Back to Home
+          </a>
+          <a href="giftahabitbuddy.html" class="btn-outline">
+            Gift HabitBuddy to a Friend
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer__copy">&copy; 2026 HabitBuddy. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleLabel = document.getElementById('themeToggleLabel');
+    function currentTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
+    function updateThemeToggle(theme) {
+      const nextThemeLabel = theme === 'dark' ? 'Light mode' : 'Dark mode';
+      themeToggleLabel.textContent = nextThemeLabel;
+      themeToggle.setAttribute('aria-label', 'Switch to ' + nextThemeLabel.toLowerCase());
+    }
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeToggle(theme);
+      try { localStorage.setItem('habitbuddy-theme', theme); } catch (error) {}
+    }
+    updateThemeToggle(currentTheme());
+    themeToggle.addEventListener('click', () => {
+      setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+
+    // Check if this is a gift confirmation
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gift') === 'true') {
+      document.getElementById('signupMessage').style.display = 'none';
+      document.getElementById('giftMessage').style.display = 'block';
+      document.querySelector('.thankyou__title').innerHTML = 'Gift <em>sent</em>!';
+    }
+
+    // Confetti burst
+    function createConfetti() {
+      const container = document.getElementById('confetti');
+      const colors = ['#E8923E', '#34D399', '#7C3AED', '#EC4899', '#F5A623', '#3B82F6', '#EF4444'];
+
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti__piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (Math.random() * 10 + 5) + 'px';
+        piece.style.height = (Math.random() * 10 + 5) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        piece.style.animationDelay = (Math.random() * 1) + 's';
+        container.appendChild(piece);
+      }
+
+      // Clean up after animation
+      setTimeout(() => container.innerHTML = '', 5000);
+    }
+
+    // Fire confetti on load
+    setTimeout(createConfetti, 300);
+  </script>
+</body>
+</html>

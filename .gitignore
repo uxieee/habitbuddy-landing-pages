@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Cloudflare local secrets
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# Node modules (if installed later)
+node_modules/
+
+# Logs
+*.log

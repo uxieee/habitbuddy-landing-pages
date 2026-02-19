@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - HabitBuddy</title>
+  <meta name="description" content="HabitBuddy privacy policy.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var storageKey = 'habitbuddy-theme';
+      var theme = 'dark';
+      try {
+        var savedTheme = localStorage.getItem(storageKey);
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          theme = savedTheme;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (error) {}
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-deep: #0C0B0F;
+      --bg-card: #16151A;
+      --bg-elevated: #1E1D25;
+      --amber: #E8923E;
+      --text-primary: #F5F3EF;
+      --text-secondary: #9B97A3;
+      --text-muted: #878191;
+      --border: #2A2832;
+      --border-light: #3A3845;
+      --nav-bg: #0C0B0Fcc;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body: 'Space Grotesk', system-ui, sans-serif;
+      --max-w: 900px;
+    }
+    :root[data-theme="light"] {
+      --bg-deep: #F6F3ED;
+      --bg-card: #FFFFFF;
+      --bg-elevated: #FBF8F2;
+      --text-primary: #1D1A24;
+      --text-secondary: #5A5467;
+      --text-muted: #6A6376;
+      --border: #DAD3E2;
+      --border-light: #C8BED4;
+      --nav-bg: #F6F3EDe0;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--nav-bg);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .nav__logo {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: 22px;
+    }
+    .nav__logo span { color: var(--amber); }
+    .nav__actions { display: flex; gap: 10px; align-items: center; }
+    .theme-toggle,
+    .nav__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .theme-toggle:hover,
+    .nav__link:hover {
+      color: var(--text-primary);
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .updated {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+    .lead {
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      font-size: 17px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 21px;
+      line-height: 1.3;
+      margin-bottom: 10px;
+      font-family: var(--font-display);
+    }
+    p, li { color: var(--text-secondary); font-size: 15px; }
+    ul { padding-left: 18px; display: grid; gap: 8px; }
+    a { color: var(--amber); }
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    @media (max-width: 640px) {
+      .theme-toggle__text { display: none; }
+      .nav__link { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Habit<span>Buddy</span></a>
+      <div class="nav__actions">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+          <span aria-hidden="true">◐</span>
+          <span class="theme-toggle__text" id="themeToggleLabel">Light mode</span>
+        </button>
+        <a class="nav__link" href="index.html">Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: February 18, 2026</p>
+    <p class="lead">This policy explains what HabitBuddy collects, why we collect it, and how you can control your information.</p>
+
+    <section class="card">
+      <h2>Information We Collect</h2>
+      <ul>
+        <li>Contact details you submit (name, phone number, and optionally email).</li>
+        <li>Service preferences (habit focus, check-in times, gift details).</li>
+        <li>Message and usage data required to deliver support and troubleshoot service issues.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>How We Use Information</h2>
+      <ul>
+        <li>To deliver daily SMS support and respond to your messages.</li>
+        <li>To operate billing, subscriptions, and gift purchases.</li>
+        <li>To improve product quality, reliability, and user experience.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Data Sharing</h2>
+      <p>We do not sell your personal information. We share data only with service providers needed to operate HabitBuddy (for example, payment processing and CRM operations), under contractual privacy obligations.</p>
+    </section>
+
+    <section class="card">
+      <h2>Data Retention and Your Rights</h2>
+      <p>We retain data only as long as needed to deliver the service and meet legal obligations. You can request access, correction, or deletion of your information by contacting <a href="mailto:support@tryhabitbuddy.com">support@tryhabitbuddy.com</a>.</p>
+    </section>
+
+    <section class="card">
+      <h2>Security</h2>
+      <p>HabitBuddy uses administrative, technical, and organizational safeguards to protect personal information in transit and at rest.</p>
+    </section>
+
+    <section class="card">
+      <h2>Contact</h2>
+      <p>If you have privacy questions, contact us at <a href="mailto:support@tryhabitbuddy.com">support@tryhabitbuddy.com</a>.</p>
+    </section>
+  </main>
+
+  <footer class="footer">&copy; 2026 HabitBuddy. All rights reserved.</footer>
+
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleLabel = document.getElementById('themeToggleLabel');
+    function currentTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
+    function updateThemeToggle(theme) {
+      const nextThemeLabel = theme === 'dark' ? 'Light mode' : 'Dark mode';
+      themeToggleLabel.textContent = nextThemeLabel;
+      themeToggle.setAttribute('aria-label', 'Switch to ' + nextThemeLabel.toLowerCase());
+    }
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeToggle(theme);
+      try { localStorage.setItem('habitbuddy-theme', theme); } catch (error) {}
+    }
+    updateThemeToggle(currentTheme());
+    themeToggle.addEventListener('click', () => {
+      setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>
