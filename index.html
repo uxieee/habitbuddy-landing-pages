@@ -933,12 +933,14 @@
     }
     .phone-preview-modal__panel {
       position: relative;
-      width: min(92vw, 340px);
+      width: min(94vw, 360px);
+      max-height: 88vh;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 18px 14px 14px;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
     }
     .phone-preview-modal__title {
       text-align: center;
@@ -962,20 +964,54 @@
       cursor: pointer;
     }
     .phone-preview-modal__body {
-      max-height: 78vh;
-      overflow: auto;
+      max-height: none;
+      overflow: visible;
       display: flex;
       justify-content: center;
     }
     .phone-preview-modal .phone-frame {
-      width: 216px;
-      padding: 10px;
-      border-radius: 32px;
+      width: min(82vw, 264px);
+      padding: 9px;
+      border-radius: 30px;
     }
     .phone-preview-modal .phone-screen {
-      min-height: 336px;
-      padding: 16px 12px;
-      border-radius: 24px;
+      height: min(64vh, 470px);
+      min-height: 0;
+      padding: 14px 10px;
+      border-radius: 22px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .phone-preview-modal .phone-screen::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+    .phone-preview-modal .phone-notch {
+      width: 90px;
+      height: 20px;
+      margin: -14px auto 10px;
+      border-radius: 0 0 13px 13px;
+    }
+    .phone-preview-modal .sms-header {
+      margin-bottom: 10px;
+    }
+    .phone-preview-modal .sms-header__name {
+      font-size: 13px;
+    }
+    .phone-preview-modal .sms-header__status {
+      font-size: 9px;
+    }
+    .phone-preview-modal .sms-bubble {
+      font-size: 11px;
+      line-height: 1.4;
+      padding: 8px 10px;
+      border-radius: 14px;
+      margin-bottom: 6px;
+    }
+    .phone-preview-modal .sms-time {
+      font-size: 8px;
+      margin-bottom: 6px;
     }
 
     /* ===== FEATURES ===== */
