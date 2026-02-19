@@ -148,7 +148,7 @@ function createDefaultPlanCatalog(values) {
       label: '6 Month Gift',
       priceId: values.stripeGift6mPriceId,
       stageId: values.stageThreeMonthPassId,
-      amount: 139,
+      amount: 139.99,
       aliases: ['6months', '6m'],
     }),
   };
