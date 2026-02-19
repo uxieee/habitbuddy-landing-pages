@@ -793,12 +793,31 @@
       .features-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 768px) {
-      .signup-hero { padding-top: 100px; }
-      .signup-form { padding: 28px; }
+      .signup-hero { padding: 68px 0 44px; }
+      .signup-hero__grid { gap: 16px; }
+      .signup-hero__grid > :first-child { order: 2; }
+      .signup-form {
+        order: 1;
+        padding: 22px;
+      }
+      .signup-form__header { margin-bottom: 14px; }
+      .signup-hero__title { font-size: clamp(32px, 8.5vw, 42px); }
+      .signup-hero__sub { font-size: 16px; margin-bottom: 22px; }
+      .signup-hero__price-free { font-size: 34px; }
+      .signup-hero__includes { margin-top: 20px !important; }
+      .form-group { margin-bottom: 14px; }
+      .form-group input,
+      .form-group select { padding: 12px 14px; }
       .features-grid { grid-template-columns: 1fr; }
       .social-proof-bar__inner { gap: 28px; }
       .theme-toggle__text { display: none; }
       .footer__inner { flex-direction: column; gap: 16px; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .signup-hero { padding: 60px 0 36px; }
+      .signup-form { padding: 18px; border-radius: 20px; }
+      .signup-form__title { font-size: 32px; }
+      .btn-submit { padding: 14px; }
     }
   </style>
 </head>

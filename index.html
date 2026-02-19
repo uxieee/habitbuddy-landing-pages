@@ -1171,7 +1171,7 @@
       .hero__actions { justify-content: center; }
       .hero__trust { justify-content: center; }
       .hero__badge { margin-left: auto; margin-right: auto; }
-      .phone-mockup { order: -1; }
+      .phone-mockup { order: 2; }
       .phone-frame { width: 280px; }
       .how-it-works__grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
       .features__grid { grid-template-columns: 1fr 1fr; }
@@ -1199,10 +1199,49 @@
       .features__grid { grid-template-columns: 1fr; }
       .comparison-table { font-size: 13px; }
       .comparison-table th, .comparison-table td { padding: 12px 10px; }
-      .hero { padding-top: 120px; }
+      .hero { padding: 96px 0 52px; }
+      .hero__grid { gap: 22px; }
+      .hero__badge { margin-bottom: 16px; }
+      .hero__title { margin-bottom: 16px; }
+      .hero__sub { margin-bottom: 22px; }
+      .phone-mockup {
+        order: 2;
+        margin-top: 0;
+      }
+      .phone-frame {
+        width: 208px;
+        padding: 10px;
+        border-radius: 32px;
+      }
+      .phone-screen {
+        min-height: 340px;
+        padding: 16px 12px;
+        border-radius: 24px;
+      }
+      .phone-notch {
+        width: 92px;
+        height: 22px;
+        margin: -16px auto 10px;
+        border-radius: 0 0 14px 14px;
+      }
+      .sms-header { margin-bottom: 12px; }
+      .sms-header__name { font-size: 14px; }
+      .sms-header__status { font-size: 10px; }
+      .sms-bubble {
+        font-size: 12px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        margin-bottom: 7px;
+      }
+      .sms-time {
+        font-size: 9px;
+        margin-bottom: 8px;
+      }
       .pricing__card { padding: 36px 24px; }
       .founder__card { padding: 32px 24px; }
       .hero__actions { flex-direction: column; }
+      .hero__actions .btn-primary,
+      .hero__actions .btn-secondary { width: 100%; justify-content: center; }
       .sms-banner__card { padding: 40px 24px; }
       .gift-spotlight { padding-top: 10px; }
       .gift-spotlight__panel { padding: 28px 22px; }
@@ -1212,7 +1251,10 @@
     }
     @media (max-width: 480px) {
       .stats-bar__inner { grid-template-columns: 1fr 1fr; gap: 24px; }
-      .phone-frame { width: 260px; }
+      .hero__title { font-size: clamp(34px, 10vw, 40px); }
+      .hero__sub { font-size: 16px; margin-bottom: 28px; }
+      .phone-frame { width: 188px; }
+      .phone-screen { min-height: 304px; padding: 14px 10px; }
     }
   </style>
 </head>
