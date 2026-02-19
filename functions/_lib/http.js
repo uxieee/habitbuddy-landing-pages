@@ -37,11 +37,11 @@ export function methodNotAllowed(allowed = ['POST']) {
   return errorResponse(405, `Method not allowed. Use: ${allowed.join(', ')}`);
 }
 
-export function optionsResponse() {
+export function optionsResponse(allowed = ['GET', 'POST', 'OPTIONS']) {
   return new Response(null, {
     status: 204,
     headers: {
-      Allow: 'GET,POST,OPTIONS',
+      Allow: allowed.join(','),
     },
   });
 }

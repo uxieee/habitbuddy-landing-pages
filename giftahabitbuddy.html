@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://js.stripe.com/v3/"></script>
   <script>
     (function () {
       var storageKey = 'habitbuddy-theme';
@@ -459,6 +460,35 @@
     .form-status.is-success { color: var(--accent-green); }
     .form-status.is-error { color: #EF4444; }
     .form-status.is-info { color: var(--text-secondary); }
+    .payment-step[hidden] { display: none; }
+    .payment-step {
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      text-align: left;
+    }
+    .payment-step__label {
+      margin: 0 0 10px;
+      font-size: 11px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+    .payment-step__hint {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .stripe-element {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-card);
+      min-height: 58px;
+    }
     .form-note {
       text-align: center;
       font-size: 12px;
@@ -761,6 +791,11 @@
             <label for="giftMessageInput">Personal Message (Optional)</label>
             <textarea id="giftMessageInput" name="gift_message" placeholder="Write something from the heart. This will be included in their first Habit Buddy text."></textarea>
           </div>
+          <div class="payment-step" id="giftPaymentStep" hidden>
+            <p class="payment-step__label">Card details</p>
+            <div id="giftPaymentElement" class="stripe-element"></div>
+            <p class="payment-step__hint">Secure one-time payment. Your recipient gets activated right after successful payment.</p>
+          </div>
           <button type="submit" class="btn-gift">
             Send This Gift
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
@@ -841,41 +876,143 @@
       document.getElementById('gift-form').scrollIntoView({ behavior: 'smooth' });
     }
 
+    const giftPaymentStep = document.getElementById('giftPaymentStep');
+    const giftCheckoutState = {
+      initialized: false,
+      stripe: null,
+      elements: null,
+      clientSecret: '',
+      paymentIntentId: '',
+      planKey: '',
+    };
+
+    function setGiftStatus(statusEl, type, message) {
+      statusEl.className = `form-status ${type ? `is-${type}` : ''}`.trim();
+      statusEl.textContent = message;
+    }
+
+    function setGiftSubmitBusy(submitBtn, label) {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      submitBtn.textContent = label;
+    }
+
+    function setGiftSubmitReady(submitBtn, html) {
+      submitBtn.disabled = false;
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.innerHTML = html;
+    }
+
+    async function initGiftPaymentElement(payload) {
+      const response = await fetch('/api/gift-payment-element-init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.clientSecret || !data.publishableKey) {
+        throw new Error(data.error || 'Unable to initialize secure card form.');
+      }
+      if (!window.Stripe) {
+        throw new Error('Stripe failed to load. Please refresh and try again.');
+      }
+
+      giftCheckoutState.stripe = window.Stripe(data.publishableKey);
+      giftCheckoutState.clientSecret = data.clientSecret;
+      giftCheckoutState.paymentIntentId = data.paymentIntentId;
+      giftCheckoutState.planKey = data.planKey || payload.gift_duration || '';
+
+      const appearance = {
+        theme: currentTheme() === 'light' ? 'stripe' : 'night',
+        variables: {
+          colorPrimary: '#F2A34A',
+          colorText: currentTheme() === 'light' ? '#242230' : '#F4F1EA',
+          colorBackground: currentTheme() === 'light' ? '#FFFFFF' : '#16151A',
+          colorDanger: '#EF4444',
+          borderRadius: '12px',
+          fontFamily: 'Space Grotesk, system-ui, sans-serif',
+        },
+      };
+
+      giftCheckoutState.elements = giftCheckoutState.stripe.elements({
+        clientSecret: data.clientSecret,
+        appearance,
+      });
+      const paymentElement = giftCheckoutState.elements.create('payment', {
+        layout: {
+          type: 'tabs',
+          defaultCollapsed: false,
+        },
+      });
+      paymentElement.mount('#giftPaymentElement');
+      giftCheckoutState.initialized = true;
+      giftPaymentStep.hidden = false;
+    }
+
     async function handleGift(e) {
       e.preventDefault();
       const form = e.currentTarget;
       const status = document.getElementById('giftFormStatus');
       const submitBtn = form.querySelector('.btn-gift');
-      const originalButtonContent = submitBtn.innerHTML;
-
-      status.className = 'form-status is-info';
-      status.textContent = 'Saving gift details...';
-      submitBtn.disabled = true;
-      submitBtn.setAttribute('aria-busy', 'true');
-      submitBtn.textContent = 'Preparing checkout...';
+      const firstStepButtonContent = `
+        Send This Gift
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
+      `;
+      const confirmStepButtonContent = `
+        Confirm &amp; Send Gift
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
+      `;
 
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
 
       try {
-        const response = await fetch('/api/gift-checkout-session', {
+        if (!giftCheckoutState.initialized) {
+          setGiftStatus(status, 'info', 'Saving gift details and loading secure card form...');
+          setGiftSubmitBusy(submitBtn, 'Loading payment form...');
+          await initGiftPaymentElement(payload);
+          setGiftStatus(status, 'success', 'Card form ready. Confirm payment to send this gift.');
+          setGiftSubmitReady(submitBtn, confirmStepButtonContent);
+          return;
+        }
+
+        setGiftStatus(status, 'info', 'Confirming payment...');
+        setGiftSubmitBusy(submitBtn, 'Processing payment...');
+        const confirmation = await giftCheckoutState.stripe.confirmPayment({
+          elements: giftCheckoutState.elements,
+          clientSecret: giftCheckoutState.clientSecret,
+          redirect: 'if_required',
+        });
+        if (confirmation.error) {
+          throw new Error(confirmation.error.message || 'Unable to process payment.');
+        }
+
+        const paymentIntentId = confirmation.paymentIntent?.id || giftCheckoutState.paymentIntentId;
+        if (!paymentIntentId) {
+          throw new Error('Missing payment intent confirmation.');
+        }
+
+        const completeResponse = await fetch('/api/gift-payment-complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            paymentIntentId,
+          }),
         });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data.checkoutUrl) {
-          throw new Error(data.error || 'Unable to start gift checkout right now.');
+        const completeData = await completeResponse.json().catch(() => ({}));
+        if (!completeResponse.ok || !completeData.success) {
+          throw new Error(completeData.error || 'Payment completed, but post-purchase sync failed.');
         }
-        status.className = 'form-status is-success';
-        status.textContent = 'Gift ready. Redirecting to secure checkout...';
-        window.location.href = data.checkoutUrl;
+
+        setGiftStatus(status, 'success', 'Gift sent successfully. Redirecting...');
+        const nextUrl = new URL('/thankyou.html', window.location.origin);
+        nextUrl.searchParams.set('gift', 'true');
+        nextUrl.searchParams.set('flow', 'gift');
+        nextUrl.searchParams.set('payment_intent', paymentIntentId);
+        window.location.href = nextUrl.toString();
       } catch (error) {
-        status.className = 'form-status is-error';
-        status.textContent = error.message || 'Something went wrong. Please try again.';
-        submitBtn.disabled = false;
-        submitBtn.removeAttribute('aria-busy');
-        submitBtn.innerHTML = originalButtonContent;
+        setGiftStatus(status, 'error', error.message || 'Something went wrong. Please try again.');
+        setGiftSubmitReady(submitBtn, giftCheckoutState.initialized ? confirmStepButtonContent : firstStepButtonContent);
       }
     }
   </script>

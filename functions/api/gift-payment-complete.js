@@ -1,20 +1,19 @@
-import { createGiftCheckoutSessionForLead } from '../_lib/habitbuddy.js';
+import { finalizeGiftPaymentIntent } from '../_lib/habitbuddy.js';
 import { readJson, jsonResponse, errorResponse, methodNotAllowed, optionsResponse, unwrapError } from '../_lib/http.js';
 
 export async function onRequestPost(context) {
   try {
     const payload = await readJson(context.request);
-    const result = await createGiftCheckoutSessionForLead(context.env, context.request, payload);
+    const result = await finalizeGiftPaymentIntent(context.env, context.request, payload);
 
     return jsonResponse({
       success: true,
-      checkoutUrl: result.session.url,
-      sessionId: result.session.id,
-      contactId: result.captured.gifterContact.id,
-      opportunityId: result.captured.opportunity.id,
-      planKey: result.captured.giftPlan.key,
-      giftDuration: result.captured.giftPlan.key,
-      giftPriceId: result.captured.giftPlan.priceId,
+      paymentIntentId: result.paymentIntentId,
+      status: result.status,
+      gifterContactId: result.gifterContactId,
+      recipientContactId: result.recipientContactId,
+      opportunityId: result.opportunityId,
+      giftPlan: result.giftPlan,
     });
   } catch (error) {
     const parsed = unwrapError(error);

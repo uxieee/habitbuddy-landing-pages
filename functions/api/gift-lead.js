@@ -1,5 +1,5 @@
 import { captureGiftLead } from '../_lib/habitbuddy.js';
-import { readJson, jsonResponse, errorResponse, optionsResponse, unwrapError } from '../_lib/http.js';
+import { readJson, jsonResponse, errorResponse, methodNotAllowed, optionsResponse, unwrapError } from '../_lib/http.js';
 
 export async function onRequestPost(context) {
   try {
@@ -20,6 +20,10 @@ export async function onRequestPost(context) {
   }
 }
 
+export async function onRequestGet() {
+  return methodNotAllowed(['POST']);
+}
+
 export async function onRequestOptions() {
-  return optionsResponse();
+  return optionsResponse(['POST', 'OPTIONS']);
 }

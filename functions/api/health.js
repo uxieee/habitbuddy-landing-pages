@@ -9,6 +9,7 @@ export async function onRequestGet(context) {
     timestamp: new Date().toISOString(),
     checks: {
       ghlTokenConfigured: Boolean(config.ghlPrivateToken),
+      stripePublishableConfigured: Boolean(config.stripePublishableKey),
       stripeSecretConfigured: Boolean(config.stripeSecretKey),
       stripeWebhookSecretConfigured: Boolean(config.stripeWebhookSecret),
     },
@@ -16,5 +17,5 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestOptions() {
-  return optionsResponse();
+  return optionsResponse(['GET', 'OPTIONS']);
 }

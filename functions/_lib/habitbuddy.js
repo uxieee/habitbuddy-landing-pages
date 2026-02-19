@@ -14,7 +14,15 @@ import {
   isDuplicateRelationError,
   isRelationNotFoundError,
 } from './ghl.js';
-import { createCheckoutSession } from './stripe.js';
+import {
+  createCheckoutSession,
+  createCustomer,
+  createSetupIntent,
+  retrieveSetupIntent,
+  createSubscription,
+  createPaymentIntent,
+  retrievePaymentIntent,
+} from './stripe.js';
 
 const TAGS = {
   lead: 'hb_lead',
@@ -413,6 +421,101 @@ export async function captureGiftLead(env, payload) {
   };
 }
 
+function buildMainFlowMetadata(config, captured, lead, plan) {
+  return {
+    flow: 'main_trial',
+    planKey: plan.key,
+    locationId: config.locationId,
+    pipelineId: config.pipelineId,
+    targetStageId: plan.stageId,
+    contactId: captured.contact.id,
+    opportunityId: captured.opportunity.id,
+    firstName: lead.firstName,
+    phone: lead.phone,
+    email: lead.email,
+    habitFocus: lead.habitFocus,
+    checkinTime: lead.checkinTime,
+  };
+}
+
+function buildGiftFlowMetadata(config, captured, lead, plan) {
+  return {
+    flow: 'gift_purchase',
+    planKey: plan.key,
+    locationId: config.locationId,
+    pipelineId: config.pipelineId,
+    gifterContactId: captured.gifterContact.id,
+    opportunityId: captured.opportunity.id,
+    giftDuration: plan.key,
+    giftPriceId: plan.priceId,
+    targetStageId: plan.stageId,
+    senderName: lead.senderName,
+    senderEmail: lead.senderEmail,
+    recipientName: lead.recipientName,
+    recipientPhone: lead.recipientPhone,
+    recipientEmail: lead.recipientEmail,
+    giftMessage: lead.message,
+  };
+}
+
+function toStripeAmountCents(amount) {
+  const numeric = toFiniteNumber(amount);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    const error = new Error('Gift amount configuration is invalid.');
+    error.status = 500;
+    throw error;
+  }
+  return Math.round(numeric * 100);
+}
+
+function ensureStripeResourceId(rawId, expectedPrefix, fieldLabel) {
+  const id = cleanText(rawId);
+  if (!id || !id.startsWith(`${expectedPrefix}_`)) {
+    const error = new Error(`${fieldLabel} is invalid.`);
+    error.status = 400;
+    throw error;
+  }
+  return id;
+}
+
+function setupIntentToSessionLike(setupIntent, metadataOverrides = {}) {
+  const metadata = {
+    ...(setupIntent?.metadata || {}),
+    ...metadataOverrides,
+  };
+  const paymentMethod = setupIntent?.payment_method || {};
+  const billing = paymentMethod?.billing_details || {};
+
+  return {
+    metadata,
+    customer_email: billing.email || metadata.email || undefined,
+    customer_details: {
+      email: billing.email || metadata.email || undefined,
+      phone: billing.phone || metadata.phone || undefined,
+      name: billing.name || metadata.firstName || undefined,
+    },
+  };
+}
+
+function paymentIntentToSessionLike(paymentIntent, metadataOverrides = {}) {
+  const metadata = {
+    ...(paymentIntent?.metadata || {}),
+    ...metadataOverrides,
+  };
+  const charge = paymentIntent?.latest_charge || {};
+  const billing = charge?.billing_details || {};
+
+  return {
+    metadata,
+    customer_email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,
+    customer_details: {
+      email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,
+      phone: billing.phone || metadata.recipientPhone || metadata.recipient_phone || undefined,
+      name: billing.name || metadata.senderName || metadata.sender_name || undefined,
+    },
+  };
+}
+
 export async function createMainCheckoutSessionForLead(env, request, payload) {
   const config = getConfig(env, request);
   assertConfig(config, ['stripeSecretKey', 'mainSuccessUrl', 'mainCancelUrl']);
@@ -427,20 +530,7 @@ export async function createMainCheckoutSessionForLead(env, request, payload) {
     throw error;
   }
 
-  const metadata = {
-    flow: 'main_trial',
-    planKey: plan.key,
-    locationId: config.locationId,
-    pipelineId: config.pipelineId,
-    targetStageId: plan.stageId,
-    contactId: captured.contact.id,
-    opportunityId: captured.opportunity.id,
-    firstName: lead.firstName,
-    phone: lead.phone,
-    email: lead.email,
-    habitFocus: lead.habitFocus,
-    checkinTime: lead.checkinTime,
-  };
+  const metadata = buildMainFlowMetadata(config, captured, lead, plan);
 
   const session = await createCheckoutSession(env, {
     mode: 'subscription',
@@ -478,23 +568,7 @@ export async function createGiftCheckoutSessionForLead(env, request, payload) {
     throw error;
   }
 
-  const metadata = {
-    flow: 'gift_purchase',
-    planKey: plan.key,
-    locationId: config.locationId,
-    pipelineId: config.pipelineId,
-    gifterContactId: captured.gifterContact.id,
-    opportunityId: captured.opportunity.id,
-    giftDuration: plan.key,
-    giftPriceId: plan.priceId,
-    targetStageId: plan.stageId,
-    senderName: lead.senderName,
-    senderEmail: lead.senderEmail,
-    recipientName: lead.recipientName,
-    recipientPhone: lead.recipientPhone,
-    recipientEmail: lead.recipientEmail,
-    giftMessage: lead.message,
-  };
+  const metadata = buildGiftFlowMetadata(config, captured, lead, plan);
 
   const session = await createCheckoutSession(env, {
     mode: 'payment',
@@ -510,6 +584,168 @@ export async function createGiftCheckoutSessionForLead(env, request, payload) {
   return {
     captured,
     session,
+  };
+}
+
+export async function createMainSetupIntentForLead(env, request, payload) {
+  const config = getConfig(env, request);
+  assertConfig(config, ['stripeSecretKey', 'stripePublishableKey', 'ghlPrivateToken', 'locationId', 'pipelineId']);
+
+  const captured = await captureMainLead(env, payload);
+  const lead = captured.lead;
+  const plan = captured.mainPlan || resolveMainPlan(config, lead.planKey);
+
+  if (plan.mode && plan.mode !== 'subscription') {
+    const error = new Error(`Main plan "${plan.label}" must use subscription mode.`);
+    error.status = 500;
+    throw error;
+  }
+
+  const metadata = buildMainFlowMetadata(config, captured, lead, plan);
+  const customer = await createCustomer(env, {
+    name: lead.firstName,
+    email: lead.email || undefined,
+    phone: lead.phone || undefined,
+    metadata: {
+      flow: metadata.flow,
+      planKey: metadata.planKey,
+      contactId: metadata.contactId,
+      opportunityId: metadata.opportunityId,
+    },
+  });
+
+  const setupIntent = await createSetupIntent(env, {
+    customer: customer.id,
+    usage: 'off_session',
+    automatic_payment_methods: { enabled: true },
+    metadata,
+  });
+
+  return {
+    captured,
+    plan,
+    customerId: customer.id,
+    setupIntent,
+    publishableKey: config.stripePublishableKey,
+  };
+}
+
+export async function activateMainSubscriptionFromSetupIntent(env, request, payload) {
+  const config = getConfig(env, request);
+  assertConfig(config, ['stripeSecretKey', 'ghlPrivateToken', 'locationId', 'pipelineId']);
+
+  const setupIntentId = ensureStripeResourceId(
+    payload.setupIntentId || payload.setup_intent_id,
+    'seti',
+    'Setup intent',
+  );
+  const setupIntent = await retrieveSetupIntent(env, setupIntentId, { expand: ['payment_method'] });
+
+  if (cleanText(setupIntent?.status) !== 'succeeded') {
+    const error = new Error('Card setup is not complete yet.');
+    error.status = 400;
+    throw error;
+  }
+
+  const metadata = setupIntent?.metadata || {};
+  const plan = resolveMainPlan(config, payload.plan_key || payload.planKey || metadata.planKey || MAIN_TRIAL_PLAN_KEY);
+  const customerId = cleanText(setupIntent?.customer);
+  const paymentMethodId = cleanText(setupIntent?.payment_method?.id || setupIntent?.payment_method);
+
+  if (!customerId || !paymentMethodId) {
+    const error = new Error('Setup intent is missing customer or payment method.');
+    error.status = 400;
+    throw error;
+  }
+
+  const mergedMetadata = {
+    ...metadata,
+    flow: 'main_trial',
+    planKey: plan.key,
+    locationId: config.locationId,
+    pipelineId: config.pipelineId,
+    targetStageId: plan.stageId,
+  };
+
+  const subscription = await createSubscription(env, {
+    customer: customerId,
+    items: [{ price: plan.priceId }],
+    trial_period_days: plan.trialPeriodDays || config.trialPeriodDays,
+    default_payment_method: paymentMethodId,
+    payment_settings: {
+      save_default_payment_method: 'on_subscription',
+    },
+    metadata: mergedMetadata,
+  });
+
+  const postPurchase = await processMainCheckoutCompleted(
+    env,
+    setupIntentToSessionLike(setupIntent, mergedMetadata),
+  );
+
+  return {
+    subscriptionId: subscription?.id,
+    status: subscription?.status,
+    planKey: plan.key,
+    ...postPurchase,
+  };
+}
+
+export async function createGiftPaymentIntentForLead(env, request, payload) {
+  const config = getConfig(env, request);
+  assertConfig(config, ['stripeSecretKey', 'stripePublishableKey', 'ghlPrivateToken', 'locationId', 'pipelineId']);
+
+  const captured = await captureGiftLead(env, payload);
+  const lead = captured.lead;
+  const plan = captured.giftPlan;
+
+  if (plan.mode && plan.mode !== 'payment') {
+    const error = new Error(`Gift plan "${plan.label}" must use payment mode.`);
+    error.status = 500;
+    throw error;
+  }
+
+  const metadata = buildGiftFlowMetadata(config, captured, lead, plan);
+  const paymentIntent = await createPaymentIntent(env, {
+    amount: toStripeAmountCents(plan.amount),
+    currency: 'usd',
+    automatic_payment_methods: { enabled: true },
+    receipt_email: lead.senderEmail || undefined,
+    description: `${plan.label} - Habit Buddy Gift`,
+    metadata,
+  });
+
+  return {
+    captured,
+    plan,
+    paymentIntent,
+    publishableKey: config.stripePublishableKey,
+  };
+}
+
+export async function finalizeGiftPaymentIntent(env, request, payload) {
+  const config = getConfig(env, request);
+  assertConfig(config, ['stripeSecretKey', 'ghlPrivateToken', 'locationId', 'pipelineId']);
+
+  const paymentIntentId = ensureStripeResourceId(
+    payload.paymentIntentId || payload.payment_intent_id,
+    'pi',
+    'Payment intent',
+  );
+  const paymentIntent = await retrievePaymentIntent(env, paymentIntentId, { expand: ['latest_charge'] });
+
+  const status = cleanText(paymentIntent?.status);
+  if (status !== 'succeeded') {
+    const error = new Error(`Payment is not complete yet (status: ${status || 'unknown'}).`);
+    error.status = 400;
+    throw error;
+  }
+
+  const result = await processGiftCheckoutCompleted(env, paymentIntentToSessionLike(paymentIntent));
+  return {
+    paymentIntentId,
+    status,
+    ...result,
   };
 }
 

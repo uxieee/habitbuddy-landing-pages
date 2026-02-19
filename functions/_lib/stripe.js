@@ -27,6 +27,14 @@ function encodeForm(payload) {
   return form;
 }
 
+function encodeQuery(payload) {
+  const pairs = [];
+  Object.entries(payload || {}).forEach(([key, value]) => flatten(value, key, pairs));
+  const query = new URLSearchParams();
+  pairs.forEach(([key, value]) => query.append(key, value));
+  return query;
+}
+
 async function parseResponse(res) {
   const text = await res.text();
   if (!text) return null;
@@ -45,19 +53,34 @@ function makeError(status, message, data) {
 }
 
 export async function stripeRequest(env, path, payload = {}) {
+  return stripeRawRequest(env, path, { method: 'POST', payload });
+}
+
+export async function stripeRawRequest(env, path, options = {}) {
   const config = getConfig(env, { url: 'https://example.com' });
   assertConfig(config, ['stripeSecretKey']);
 
-  const form = encodeForm(payload);
-  const res = await fetch(`${config.stripeApiBase}${path}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${config.stripeSecretKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-      'User-Agent': 'HabitBuddyBridge/1.0',
-    },
-    body: form,
+  const method = options.method || 'POST';
+  const headers = {
+    Authorization: `Bearer ${config.stripeSecretKey}`,
+    Accept: 'application/json',
+    'User-Agent': 'HabitBuddyBridge/1.0',
+    ...(options.headers || {}),
+  };
+
+  const query = encodeQuery(options.query || {});
+  const url = `${config.stripeApiBase}${path}${query.size ? `?${query.toString()}` : ''}`;
+
+  let body;
+  if (method !== 'GET' && method !== 'HEAD' && options.payload !== undefined) {
+    body = encodeForm(options.payload);
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+  }
+
+  const res = await fetch(url, {
+    method,
+    headers,
+    body,
   });
 
   const data = await parseResponse(res);
@@ -69,8 +92,36 @@ export async function stripeRequest(env, path, payload = {}) {
   return data;
 }
 
+export async function stripeGet(env, path, query = {}) {
+  return stripeRawRequest(env, path, { method: 'GET', query });
+}
+
 export async function createCheckoutSession(env, payload) {
   return stripeRequest(env, '/checkout/sessions', payload);
+}
+
+export async function createCustomer(env, payload) {
+  return stripeRequest(env, '/customers', payload);
+}
+
+export async function createSetupIntent(env, payload) {
+  return stripeRequest(env, '/setup_intents', payload);
+}
+
+export async function retrieveSetupIntent(env, setupIntentId, query = {}) {
+  return stripeGet(env, `/setup_intents/${setupIntentId}`, query);
+}
+
+export async function createSubscription(env, payload) {
+  return stripeRequest(env, '/subscriptions', payload);
+}
+
+export async function createPaymentIntent(env, payload) {
+  return stripeRequest(env, '/payment_intents', payload);
+}
+
+export async function retrievePaymentIntent(env, paymentIntentId, query = {}) {
+  return stripeGet(env, `/payment_intents/${paymentIntentId}`, query);
 }
 
 function parseStripeSignatureHeader(headerValue) {

@@ -1,6 +1,7 @@
 const DEFAULTS = {
   GHL_API_BASE: 'https://services.leadconnectorhq.com',
   STRIPE_API_BASE: 'https://api.stripe.com/v1',
+  STRIPE_PUBLISHABLE_KEY: '',
 
   GHL_LOCATION_ID: '3ouY0YkB0fLDFs5nb8UG',
   GHL_PIPELINE_ID: 'fQzLboVKi639klKBI64N',
@@ -190,6 +191,7 @@ export function getConfig(env, request) {
   return {
     ghlApiBase: readEnv(env, 'GHL_API_BASE'),
     stripeApiBase: readEnv(env, 'STRIPE_API_BASE'),
+    stripePublishableKey: readEnv(env, 'STRIPE_PUBLISHABLE_KEY'),
     ghlPrivateToken: readEnv(env, 'GHL_PRIVATE_TOKEN'),
     stripeSecretKey: readEnv(env, 'STRIPE_SECRET_KEY'),
     stripeWebhookSecret: readEnv(env, 'STRIPE_WEBHOOK_SECRET'),

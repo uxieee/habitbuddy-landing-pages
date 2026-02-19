@@ -10,6 +10,10 @@ API routes (under `functions/api/`):
 - `POST /api/gift-lead`
 - `POST /api/main-checkout-session`
 - `POST /api/gift-checkout-session`
+- `POST /api/main-payment-element-init`
+- `POST /api/main-subscribe`
+- `POST /api/gift-payment-element-init`
+- `POST /api/gift-payment-complete`
 - `POST /api/stripe-webhook`
 
 Shared utilities:
@@ -20,8 +24,8 @@ Shared utilities:
 - `functions/_lib/habitbuddy.js`
 
 Frontend wiring:
-- `maxsupport.html` now posts to `/api/main-checkout-session` and redirects to Stripe Checkout.
-- `giftahabitbuddy.html` now posts to `/api/gift-checkout-session` and redirects to Stripe Checkout.
+- `maxsupport.html` now uses in-page Stripe Payment Element (`/api/main-payment-element-init` + `/api/main-subscribe`) with no hosted checkout redirect.
+- `giftahabitbuddy.html` now uses in-page Stripe Payment Element (`/api/gift-payment-element-init` + `/api/gift-payment-complete`) with no hosted checkout redirect.
 - forms now send stable plan keys (`main_trial`, `gift_1m`, `gift_3m`) to backend.
 - `_redirects` keeps legacy `/home` traffic forwarding to `/`.
 
@@ -31,15 +35,16 @@ Frontend wiring:
 1. Capture lead (first name/email/phone/habit/check-in)
 2. Upsert contact in GHL
 3. Create or update open opportunity in `Abandoned Cart`
-4. Create Stripe Checkout session for trial subscription (7-day trial)
-5. On `checkout.session.completed`, move opportunity to `Max Support (Trial)`
+4. Create Stripe SetupIntent and collect card in-page via Payment Element
+5. Create Stripe subscription (7-day trial) server-side using saved payment method
+6. Move opportunity to `Max Support (Trial)` and tag `hb_trial_started`
 
 ### Gift flow
 1. Capture gifter + recipient details
 2. Upsert gifter contact in GHL
 3. Create or update open opportunity in `Abandoned Cart (Gifting)`
-4. Create Stripe Checkout session for one-time payment (1-month or 3-month)
-5. On `checkout.session.completed`:
+4. Create Stripe PaymentIntent and collect payment in-page via Payment Element
+5. On successful payment:
    - upsert recipient contact
    - move existing gift opportunity from gifter contact to recipient contact via Associations API
    - move stage to:
@@ -50,6 +55,7 @@ Frontend wiring:
 
 Copy `.dev.vars.example` and set:
 - `GHL_PRIVATE_TOKEN`
+- `STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_MAIN_TRIAL_PRICE_ID`
@@ -88,9 +94,12 @@ Endpoint URL (test/prod):
 
 Recommended event:
 - `checkout.session.completed`
+- `customer.subscription.created`
+- `payment_intent.succeeded`
 
 Optional event (already handled):
 - `checkout.session.async_payment_succeeded`
+- `customer.subscription.updated`
 
 ## Cloudflare Pages deployment notes
 
