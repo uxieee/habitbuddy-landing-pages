@@ -22,6 +22,7 @@ import {
   createSubscription,
   createPaymentIntent,
   retrievePaymentIntent,
+  retrievePrice,
 } from './stripe.js';
 
 const TAGS = {
@@ -468,6 +469,52 @@ function toStripeAmountCents(amount) {
   return Math.round(numeric * 100);
 }
 
+function centsToAmount(cents, fallbackAmount) {
+  const numeric = toFiniteNumber(cents);
+  if (!Number.isFinite(numeric) || numeric <= 0) return fallbackAmount;
+  return Math.round((numeric / 100) * 100) / 100;
+}
+
+async function resolvePriceAmountCents(env, priceId, fallbackAmount) {
+  const validPriceId = cleanText(priceId);
+  if (!validPriceId) {
+    return toStripeAmountCents(fallbackAmount);
+  }
+
+  try {
+    const price = await retrievePrice(env, validPriceId);
+    const unitAmount = toFiniteNumber(price?.unit_amount);
+    if (Number.isFinite(unitAmount) && unitAmount > 0) {
+      return Math.round(unitAmount);
+    }
+
+    const unitAmountDecimal = toFiniteNumber(price?.unit_amount_decimal);
+    if (Number.isFinite(unitAmountDecimal) && unitAmountDecimal > 0) {
+      return Math.round(unitAmountDecimal);
+    }
+  } catch (error) {
+    console.warn('Price amount lookup failed, using configured fallback:', error?.message || error);
+  }
+
+  return toStripeAmountCents(fallbackAmount);
+}
+
+function resolveSessionAmount(session, fallbackAmount) {
+  const candidates = [
+    session?.amount_total,
+    session?.amount_subtotal,
+    session?.amount_received,
+    session?.amount,
+  ];
+  for (const candidate of candidates) {
+    const numeric = toFiniteNumber(candidate);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return centsToAmount(numeric, fallbackAmount);
+    }
+  }
+  return fallbackAmount;
+}
+
 function ensureStripeResourceId(rawId, expectedPrefix, fieldLabel) {
   const id = cleanText(rawId);
   if (!id || !id.startsWith(`${expectedPrefix}_`)) {
@@ -507,6 +554,9 @@ function paymentIntentToSessionLike(paymentIntent, metadataOverrides = {}) {
 
   return {
     metadata,
+    amount_total: paymentIntent?.amount_received || paymentIntent?.amount || undefined,
+    amount_received: paymentIntent?.amount_received || undefined,
+    amount: paymentIntent?.amount || undefined,
     customer_email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,
     customer_details: {
       email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,
@@ -705,9 +755,20 @@ export async function createGiftPaymentIntentForLead(env, request, payload) {
     throw error;
   }
 
+  const amountCents = await resolvePriceAmountCents(env, plan.priceId, plan.amount);
+  const amountValue = centsToAmount(amountCents, plan.amount);
+  if (captured?.opportunity?.id && Number.isFinite(amountValue)) {
+    await safeUpdateOpportunity(env, captured.opportunity.id, {
+      pipelineId: config.pipelineId,
+      pipelineStageId: config.stageAbandonedCartGiftingId,
+      status: 'open',
+      monetaryValue: amountValue,
+    });
+  }
+
   const metadata = buildGiftFlowMetadata(config, captured, lead, plan);
   const paymentIntent = await createPaymentIntent(env, {
-    amount: toStripeAmountCents(plan.amount),
+    amount: amountCents,
     currency: 'usd',
     automatic_payment_methods: { enabled: true },
     receipt_email: lead.senderEmail || undefined,
@@ -717,7 +778,10 @@ export async function createGiftPaymentIntentForLead(env, request, payload) {
 
   return {
     captured,
-    plan,
+    plan: {
+      ...plan,
+      amount: amountValue,
+    },
     paymentIntent,
     publishableKey: config.stripePublishableKey,
   };
@@ -895,6 +959,7 @@ export async function processGiftCheckoutCompleted(env, session) {
   const recipientPhone = cleanPhone(metadata.recipientPhone || metadata.recipient_phone || session?.customer_details?.phone);
 
   const giftPlan = resolveGiftPlanFromMetadata(config, metadata);
+  const resolvedAmount = resolveSessionAmount(session, giftPlan.amount);
 
   let gifterContactId = cleanText(metadata.gifterContactId || metadata.gifter_contact_id);
   if (!gifterContactId && senderEmail) {
@@ -952,7 +1017,7 @@ export async function processGiftCheckoutCompleted(env, session) {
       contactId: recipientContact.id,
       name: buildOpportunityName(recipientName || 'Recipient', giftPlan.label),
       source: 'HabitBuddy Gift Checkout',
-      monetaryValue: giftPlan.amount,
+      monetaryValue: resolvedAmount,
       customFields: listOpportunityCustomFields(config, {
         giftingFlag: 'Yes',
         recipientName,
@@ -988,7 +1053,7 @@ export async function processGiftCheckoutCompleted(env, session) {
       pipelineId: config.pipelineId,
       pipelineStageId: giftPlan.stageId,
       status: 'open',
-      monetaryValue: giftPlan.amount,
+      monetaryValue: resolvedAmount,
       name: buildOpportunityName(recipientName || senderName || 'Gift', giftPlan.label),
       customFields: listOpportunityCustomFields(config, {
         giftingFlag: 'Yes',

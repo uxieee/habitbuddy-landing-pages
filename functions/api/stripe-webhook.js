@@ -48,6 +48,9 @@ function paymentIntentToSessionLike(paymentIntent) {
   const billing = charge?.billing_details || {};
   return {
     metadata,
+    amount_total: paymentIntent?.amount_received || paymentIntent?.amount || undefined,
+    amount_received: paymentIntent?.amount_received || undefined,
+    amount: paymentIntent?.amount || undefined,
     customer_email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,
     customer_details: {
       email: billing.email || metadata.senderEmail || metadata.sender_email || undefined,

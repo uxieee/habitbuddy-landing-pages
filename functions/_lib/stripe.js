@@ -124,6 +124,10 @@ export async function retrievePaymentIntent(env, paymentIntentId, query = {}) {
   return stripeGet(env, `/payment_intents/${paymentIntentId}`, query);
 }
 
+export async function retrievePrice(env, priceId, query = {}) {
+  return stripeGet(env, `/prices/${priceId}`, query);
+}
+
 function parseStripeSignatureHeader(headerValue) {
   const result = {
     timestamp: null,
