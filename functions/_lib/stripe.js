@@ -67,6 +67,9 @@ export async function stripeRawRequest(env, path, options = {}) {
     'User-Agent': 'HabitBuddyBridge/1.0',
     ...(options.headers || {}),
   };
+  if (options.idempotencyKey) {
+    headers['Idempotency-Key'] = String(options.idempotencyKey);
+  }
 
   const query = encodeQuery(options.query || {});
   const url = `${config.stripeApiBase}${path}${query.size ? `?${query.toString()}` : ''}`;
@@ -116,6 +119,14 @@ export async function createSubscription(env, payload) {
   return stripeRequest(env, '/subscriptions', payload);
 }
 
+export async function createSubscriptionWithIdempotency(env, payload, idempotencyKey) {
+  return stripeRawRequest(env, '/subscriptions', {
+    method: 'POST',
+    payload,
+    idempotencyKey,
+  });
+}
+
 export async function createPaymentIntent(env, payload) {
   return stripeRequest(env, '/payment_intents', payload);
 }
@@ -126,6 +137,10 @@ export async function retrievePaymentIntent(env, paymentIntentId, query = {}) {
 
 export async function retrievePrice(env, priceId, query = {}) {
   return stripeGet(env, `/prices/${priceId}`, query);
+}
+
+export async function listSubscriptions(env, query = {}) {
+  return stripeGet(env, '/subscriptions', query);
 }
 
 function parseStripeSignatureHeader(headerValue) {

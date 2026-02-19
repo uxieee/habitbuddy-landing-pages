@@ -137,7 +137,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    return errorResponse(parsed.status, parsed.message, parsed.details);
+    return errorResponse(parsed.status, parsed.message);
   }
 }
 

@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script>
     (function () {
       document.documentElement.classList.add('js');
@@ -464,6 +465,13 @@
     .form-status.is-success { color: var(--accent-green); }
     .form-status.is-error { color: #EF4444; }
     .form-status.is-info { color: var(--text-secondary); }
+    .turnstile-host {
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
     .payment-step[hidden] { display: none; }
     .payment-step {
       margin-top: 10px;
@@ -1142,6 +1150,7 @@
               </div>
             </div>
             <p class="form-status is-info" id="signupFormStatus" role="status" aria-live="polite"></p>
+            <div id="mainTurnstile" class="turnstile-host" aria-hidden="true"></div>
           </form>
           <div class="form-trust">
             <div class="form-trust__item">
@@ -1487,6 +1496,138 @@
       planKey: 'main_trial',
       leadPayload: null,
     };
+    const mainSecurityState = {
+      configLoaded: false,
+      turnstileEnabled: false,
+      turnstileSiteKey: '',
+      widgetId: null,
+      pendingResolve: null,
+      pendingReject: null,
+    };
+
+    async function fetchSecurityConfig() {
+      if (mainSecurityState.configLoaded) return;
+      try {
+        const response = await fetch('/api/security-config', {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        });
+        const data = await response.json().catch(() => ({}));
+        mainSecurityState.turnstileEnabled = Boolean(data.turnstileEnabled && data.turnstileSiteKey);
+        mainSecurityState.turnstileSiteKey = data.turnstileSiteKey || '';
+      } catch (_error) {
+        mainSecurityState.turnstileEnabled = false;
+        mainSecurityState.turnstileSiteKey = '';
+      } finally {
+        mainSecurityState.configLoaded = true;
+      }
+    }
+
+    function waitForTurnstileLibrary(timeoutMs = 5000) {
+      if (window.turnstile) return Promise.resolve();
+
+      return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const interval = window.setInterval(() => {
+          if (window.turnstile) {
+            window.clearInterval(interval);
+            resolve();
+            return;
+          }
+          if (Date.now() - start > timeoutMs) {
+            window.clearInterval(interval);
+            reject(new Error('Security verification service failed to load.'));
+          }
+        }, 50);
+      });
+    }
+
+    async function ensureMainTurnstileWidget() {
+      await fetchSecurityConfig();
+      if (!mainSecurityState.turnstileEnabled) return null;
+      if (mainSecurityState.widgetId !== null) return mainSecurityState.widgetId;
+
+      await waitForTurnstileLibrary();
+      const host = document.getElementById('mainTurnstile');
+      if (!host) throw new Error('Security verification is unavailable.');
+
+      mainSecurityState.widgetId = window.turnstile.render(host, {
+        sitekey: mainSecurityState.turnstileSiteKey,
+        size: 'invisible',
+        callback(token) {
+          if (!mainSecurityState.pendingResolve) return;
+          const resolve = mainSecurityState.pendingResolve;
+          mainSecurityState.pendingResolve = null;
+          mainSecurityState.pendingReject = null;
+          resolve(token);
+        },
+        'error-callback': () => {
+          if (!mainSecurityState.pendingReject) return;
+          const reject = mainSecurityState.pendingReject;
+          mainSecurityState.pendingResolve = null;
+          mainSecurityState.pendingReject = null;
+          reject(new Error('Security verification failed. Please retry.'));
+        },
+        'expired-callback': () => {
+          if (!mainSecurityState.pendingReject) return;
+          const reject = mainSecurityState.pendingReject;
+          mainSecurityState.pendingResolve = null;
+          mainSecurityState.pendingReject = null;
+          reject(new Error('Security verification expired. Please retry.'));
+        },
+      });
+
+      return mainSecurityState.widgetId;
+    }
+
+    async function getMainTurnstileToken(action) {
+      const widgetId = await ensureMainTurnstileWidget();
+      if (widgetId === null) return '';
+
+      return new Promise((resolve, reject) => {
+        mainSecurityState.pendingResolve = resolve;
+        mainSecurityState.pendingReject = reject;
+
+        const timeout = window.setTimeout(() => {
+          if (mainSecurityState.pendingReject !== reject) return;
+          mainSecurityState.pendingResolve = null;
+          mainSecurityState.pendingReject = null;
+          reject(new Error('Security verification timed out. Please retry.'));
+        }, 12000);
+
+        const wrappedResolve = (value) => {
+          window.clearTimeout(timeout);
+          resolve(value);
+        };
+        const wrappedReject = (error) => {
+          window.clearTimeout(timeout);
+          reject(error);
+        };
+
+        mainSecurityState.pendingResolve = wrappedResolve;
+        mainSecurityState.pendingReject = wrappedReject;
+
+        try {
+          window.turnstile.reset(widgetId);
+          window.turnstile.execute(widgetId, { action });
+        } catch (_error) {
+          mainSecurityState.pendingResolve = null;
+          mainSecurityState.pendingReject = null;
+          wrappedReject(new Error('Unable to run security verification.'));
+        }
+      });
+    }
+
+    async function securePostJson(url, payload, action) {
+      const token = await getMainTurnstileToken(action);
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['x-turnstile-token'] = token;
+      return fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+    }
 
     function setMainStatus(statusEl, type, message) {
       statusEl.className = `form-status ${type ? `is-${type}` : ''}`.trim();
@@ -1574,11 +1715,7 @@
       if (paymentHost) paymentHost.innerHTML = '';
       mainPaymentStep.hidden = true;
 
-      const response = await fetch('/api/main-payment-element-init', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const response = await securePostJson('/api/main-payment-element-init', payload, 'main_payment_init');
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.clientSecret || !data.publishableKey) {
         throw new Error(data.error || 'Unable to initialize secure card form.');
@@ -1671,14 +1808,14 @@
         }
 
         setMainStatus(signupFormStatus, 'info', 'Starting your trial...');
-        const subscribeResponse = await fetch('/api/main-subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const subscribeResponse = await securePostJson(
+          '/api/main-subscribe',
+          {
             setupIntentId,
             planKey: payload.plan_key || mainCheckoutState.planKey || 'main_trial',
-          }),
-        });
+          },
+          'main_subscribe',
+        );
         const subscribeData = await subscribeResponse.json().catch(() => ({}));
         if (!subscribeResponse.ok || !subscribeData.success) {
           throw new Error(subscribeData.error || 'Unable to activate your trial.');
@@ -1732,6 +1869,7 @@
       normalizePhoneToE164();
     });
 
+    fetchSecurityConfig().catch(() => {});
     setDefaultPhoneCountryByLocale();
     normalizePhoneToE164();
     setMainFormStep(1);
