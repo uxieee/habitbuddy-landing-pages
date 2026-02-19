@@ -12,3 +12,8 @@ node_modules/
 
 # Logs
 *.log
+
+# QA artifacts
+audit-screenshots/
+audit-screenshots-2026/
+QA report, habit buddy,*
