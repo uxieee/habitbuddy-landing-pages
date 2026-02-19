@@ -327,6 +327,127 @@
       background: var(--bg-card);
       color: var(--text-primary);
     }
+    .form-stepper {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .form-stepper__item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+    .form-stepper__num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: inherit;
+      background: transparent;
+    }
+    .form-stepper__item.is-current {
+      color: var(--text-primary);
+      border-color: var(--accent-amber);
+      background: var(--amber-soft);
+    }
+    .form-stepper__item.is-current .form-stepper__num {
+      border-color: var(--accent-amber);
+      background: var(--amber);
+      color: #0C0B0F;
+    }
+    .form-stepper__item.is-complete {
+      color: var(--accent-green);
+      border-color: #34D39950;
+      background: var(--green-soft);
+    }
+    .form-stepper__item.is-complete .form-stepper__num {
+      border-color: var(--accent-green);
+      background: var(--accent-green);
+      color: #052A1C;
+    }
+    .form-step[hidden] { display: none; }
+    .form-summary {
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+    }
+    .form-summary__title {
+      margin: 0 0 10px;
+      font-size: 11px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .form-summary__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .form-summary__item {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      min-height: 56px;
+    }
+    .form-summary__label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .form-summary__value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-back {
+      flex: 0 0 auto;
+      padding: 14px 18px;
+      border: 1px solid var(--border-light);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-amber);
+      background: var(--amber-soft);
+    }
     .btn-submit {
       width: 100%;
       padding: 16px;
@@ -343,8 +464,9 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 8px;
+      margin-top: 0;
     }
+    .form-actions .btn-submit { flex: 1; }
     .btn-submit:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 40px var(--amber-glow);
@@ -851,6 +973,12 @@
       .signup-hero { padding: 60px 0 36px; }
       .signup-form { padding: 18px; border-radius: 20px; }
       .signup-form__title { font-size: 32px; }
+      .form-stepper__item { font-size: 11px; padding: 8px; }
+      .form-stepper__num { width: 18px; height: 18px; font-size: 10px; }
+      .form-summary__grid { grid-template-columns: 1fr; }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions .btn-submit,
+      .btn-back { width: 100%; }
       .btn-submit { padding: 14px; }
     }
     @media (max-width: 380px) {
@@ -937,52 +1065,94 @@
           </div>
           <form id="signupForm" onsubmit="handleSignup(event)">
             <input type="hidden" name="plan_key" value="main_trial">
-            <div class="form-group">
-              <label for="name">Your First Name</label>
-              <input type="text" id="name" name="first_name" placeholder="Alex" autocomplete="given-name" required>
+            <div class="form-stepper" role="group" aria-label="Signup steps">
+              <div class="form-stepper__item is-current" id="mainStepIndicator1">
+                <span class="form-stepper__num">1</span>
+                <span>Your details</span>
+              </div>
+              <div class="form-stepper__item" id="mainStepIndicator2">
+                <span class="form-stepper__num">2</span>
+                <span>Card details</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="email">Email (Optional)</label>
-              <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email">
+            <div class="form-step" id="mainFormStep1">
+              <div class="form-group">
+                <label for="name">Your First Name</label>
+                <input type="text" id="name" name="first_name" placeholder="Alex" autocomplete="given-name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email (Optional)</label>
+                <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" required>
+              </div>
+              <div class="form-group">
+                <label for="habit">What habit do you want to build?</label>
+                <select id="habit" name="habit_focus" required>
+                  <option value="" disabled selected>Choose your focus</option>
+                  <option value="exercise">Exercise &amp; Fitness</option>
+                  <option value="meditation">Meditation &amp; Mindfulness</option>
+                  <option value="reading">Reading &amp; Learning</option>
+                  <option value="nutrition">Nutrition &amp; Hydration</option>
+                  <option value="sleep">Sleep &amp; Recovery</option>
+                  <option value="journaling">Journaling &amp; Reflection</option>
+                  <option value="productivity">Productivity &amp; Focus</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="time">When should we text you?</label>
+                <select id="time" name="checkin_time" required>
+                  <option value="" disabled selected>Pick your check-in time</option>
+                  <option value="6am">6:00 AM &mdash; Early Bird</option>
+                  <option value="8am">8:00 AM &mdash; Morning Start</option>
+                  <option value="12pm">12:00 PM &mdash; Midday Check</option>
+                  <option value="6pm">6:00 PM &mdash; Evening Wind-Down</option>
+                  <option value="9pm">9:00 PM &mdash; Night Owl</option>
+                </select>
+              </div>
+              <button type="button" class="btn-submit" id="mainContinueBtn">
+                Continue to Secure Card
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
+              </button>
             </div>
-            <div class="form-group">
-              <label for="phone">Phone Number</label>
-              <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" required>
+            <div class="form-step" id="mainFormStep2" hidden>
+              <div class="form-summary" id="mainFormSummary">
+                <p class="form-summary__title">You are about to start:</p>
+                <div class="form-summary__grid">
+                  <div class="form-summary__item">
+                    <span class="form-summary__label">Name</span>
+                    <span class="form-summary__value" id="summaryName">-</span>
+                  </div>
+                  <div class="form-summary__item">
+                    <span class="form-summary__label">Phone</span>
+                    <span class="form-summary__value" id="summaryPhone">-</span>
+                  </div>
+                  <div class="form-summary__item">
+                    <span class="form-summary__label">Habit</span>
+                    <span class="form-summary__value" id="summaryHabit">-</span>
+                  </div>
+                  <div class="form-summary__item">
+                    <span class="form-summary__label">Check-in time</span>
+                    <span class="form-summary__value" id="summaryTime">-</span>
+                  </div>
+                </div>
+              </div>
+              <div class="payment-step" id="mainPaymentStep" hidden>
+                <p class="payment-step__label">Card details</p>
+                <div id="mainPaymentElement" class="stripe-element"></div>
+                <p class="payment-step__hint">Card is saved securely. Your trial starts now and billing begins after 7 days unless cancelled.</p>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-back" id="mainBackBtn">Back</button>
+                <button type="submit" class="btn-submit" id="mainConfirmBtn">
+                  Confirm Card &amp; Start Trial
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
+                </button>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="habit">What habit do you want to build?</label>
-              <select id="habit" name="habit_focus" required>
-                <option value="" disabled selected>Choose your focus</option>
-                <option value="exercise">Exercise &amp; Fitness</option>
-                <option value="meditation">Meditation &amp; Mindfulness</option>
-                <option value="reading">Reading &amp; Learning</option>
-                <option value="nutrition">Nutrition &amp; Hydration</option>
-                <option value="sleep">Sleep &amp; Recovery</option>
-                <option value="journaling">Journaling &amp; Reflection</option>
-                <option value="productivity">Productivity &amp; Focus</option>
-                <option value="other">Something else</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="time">When should we text you?</label>
-              <select id="time" name="checkin_time" required>
-                <option value="" disabled selected>Pick your check-in time</option>
-                <option value="6am">6:00 AM &mdash; Early Bird</option>
-                <option value="8am">8:00 AM &mdash; Morning Start</option>
-                <option value="12pm">12:00 PM &mdash; Midday Check</option>
-                <option value="6pm">6:00 PM &mdash; Evening Wind-Down</option>
-                <option value="9pm">9:00 PM &mdash; Night Owl</option>
-              </select>
-            </div>
-            <div class="payment-step" id="mainPaymentStep" hidden>
-              <p class="payment-step__label">Card details</p>
-              <div id="mainPaymentElement" class="stripe-element"></div>
-              <p class="payment-step__hint">Card is saved securely. Your trial starts now and billing begins after 7 days unless cancelled.</p>
-            </div>
-            <button type="submit" class="btn-submit">
-              Start My Free Trial
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
-            </button>
             <p class="form-status is-info" id="signupFormStatus" role="status" aria-live="polite"></p>
           </form>
           <div class="form-trust">
@@ -1302,14 +1472,33 @@
       });
     });
 
+    const signupForm = document.getElementById('signupForm');
+    const signupFormStatus = document.getElementById('signupFormStatus');
     const mainPaymentStep = document.getElementById('mainPaymentStep');
+    const mainFormStep1 = document.getElementById('mainFormStep1');
+    const mainFormStep2 = document.getElementById('mainFormStep2');
+    const mainStepIndicator1 = document.getElementById('mainStepIndicator1');
+    const mainStepIndicator2 = document.getElementById('mainStepIndicator2');
+    const mainContinueBtn = document.getElementById('mainContinueBtn');
+    const mainBackBtn = document.getElementById('mainBackBtn');
+    const mainConfirmBtn = document.getElementById('mainConfirmBtn');
+    const mainSummaryName = document.getElementById('summaryName');
+    const mainSummaryPhone = document.getElementById('summaryPhone');
+    const mainSummaryHabit = document.getElementById('summaryHabit');
+    const mainSummaryTime = document.getElementById('summaryTime');
+    const buttonIcon = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>';
+    const continueStepButtonContent = `Continue to Secure Card ${buttonIcon}`;
+    const confirmStepButtonContent = `Confirm Card &amp; Start Trial ${buttonIcon}`;
+
     const mainCheckoutState = {
       initialized: false,
       stripe: null,
       elements: null,
+      paymentElement: null,
       clientSecret: '',
       setupIntentId: '',
       planKey: 'main_trial',
+      leadPayload: null,
     };
 
     function setMainStatus(statusEl, type, message) {
@@ -1329,7 +1518,42 @@
       submitBtn.innerHTML = html;
     }
 
+    function setMainFormStep(stepNumber) {
+      const onFirstStep = stepNumber === 1;
+      mainFormStep1.hidden = !onFirstStep;
+      mainFormStep2.hidden = onFirstStep;
+      mainStepIndicator1.classList.toggle('is-current', onFirstStep);
+      mainStepIndicator1.classList.toggle('is-complete', !onFirstStep);
+      mainStepIndicator2.classList.toggle('is-current', !onFirstStep);
+      mainStepIndicator2.classList.remove('is-complete');
+    }
+
+    function getSelectLabel(selectId, value) {
+      const select = document.getElementById(selectId);
+      if (!select || !value) return '-';
+      const option = Array.from(select.options).find((entry) => entry.value === value);
+      return option ? option.textContent.replace(/\s+/g, ' ').trim() : value;
+    }
+
+    function populateMainSummary(payload) {
+      mainSummaryName.textContent = payload.first_name || '-';
+      mainSummaryPhone.textContent = payload.phone || '-';
+      mainSummaryHabit.textContent = getSelectLabel('habit', payload.habit_focus);
+      mainSummaryTime.textContent = getSelectLabel('time', payload.checkin_time);
+    }
+
     async function initMainPaymentElement(payload) {
+      if (mainCheckoutState.paymentElement) {
+        mainCheckoutState.paymentElement.unmount();
+        mainCheckoutState.paymentElement = null;
+      }
+      mainCheckoutState.initialized = false;
+      mainCheckoutState.clientSecret = '';
+      mainCheckoutState.setupIntentId = '';
+      const paymentHost = document.getElementById('mainPaymentElement');
+      if (paymentHost) paymentHost.innerHTML = '';
+      mainPaymentStep.hidden = true;
+
       const response = await fetch('/api/main-payment-element-init', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1364,46 +1588,48 @@
         clientSecret: data.clientSecret,
         appearance,
       });
-      const paymentElement = mainCheckoutState.elements.create('payment', {
+      mainCheckoutState.paymentElement = mainCheckoutState.elements.create('payment', {
         layout: {
           type: 'tabs',
           defaultCollapsed: false,
         },
       });
-      paymentElement.mount('#mainPaymentElement');
+      mainCheckoutState.paymentElement.mount('#mainPaymentElement');
       mainCheckoutState.initialized = true;
       mainPaymentStep.hidden = false;
     }
 
-    async function handleSignup(e) {
-      e.preventDefault();
-      const form = e.currentTarget;
-      const status = document.getElementById('signupFormStatus');
-      const submitBtn = form.querySelector('.btn-submit');
-      const firstStepButtonContent = `
-        Start My Free Trial
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
-      `;
-      const confirmStepButtonContent = `
-        Confirm Card &amp; Start Trial
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
-      `;
-
-      const formData = new FormData(form);
-      const payload = Object.fromEntries(formData.entries());
+    async function handleContinueToCard() {
+      if (!signupForm.reportValidity()) return;
+      const payload = Object.fromEntries(new FormData(signupForm).entries());
 
       try {
-        if (!mainCheckoutState.initialized) {
-          setMainStatus(status, 'info', 'Saving your details and loading secure card form...');
-          setSubmitBusy(submitBtn, 'Loading payment form...');
-          await initMainPaymentElement(payload);
-          setMainStatus(status, 'success', 'Card form ready. Add your card to start your trial.');
-          setSubmitReady(submitBtn, confirmStepButtonContent);
-          return;
-        }
+        setMainStatus(signupFormStatus, 'info', 'Saving your details and loading secure card form...');
+        setSubmitBusy(mainContinueBtn, 'Loading payment form...');
+        await initMainPaymentElement(payload);
+        mainCheckoutState.leadPayload = payload;
+        populateMainSummary(payload);
+        setMainFormStep(2);
+        setMainStatus(signupFormStatus, 'success', 'Card form ready. Add your card to start your trial.');
+      } catch (error) {
+        setMainStatus(signupFormStatus, 'error', error.message || 'Something went wrong. Please try again.');
+      } finally {
+        setSubmitReady(mainContinueBtn, continueStepButtonContent);
+      }
+    }
 
-        setMainStatus(status, 'info', 'Confirming card details...');
-        setSubmitBusy(submitBtn, 'Confirming card...');
+    async function handleSignup(e) {
+      e.preventDefault();
+      const payload = mainCheckoutState.leadPayload || Object.fromEntries(new FormData(signupForm).entries());
+
+      if (!mainCheckoutState.initialized) {
+        await handleContinueToCard();
+        return;
+      }
+
+      try {
+        setMainStatus(signupFormStatus, 'info', 'Confirming card details...');
+        setSubmitBusy(mainConfirmBtn, 'Confirming card...');
         const confirmation = await mainCheckoutState.stripe.confirmSetup({
           elements: mainCheckoutState.elements,
           clientSecret: mainCheckoutState.clientSecret,
@@ -1419,7 +1645,7 @@
           throw new Error('Missing setup intent confirmation.');
         }
 
-        setMainStatus(status, 'info', 'Starting your trial...');
+        setMainStatus(signupFormStatus, 'info', 'Starting your trial...');
         const subscribeResponse = await fetch('/api/main-subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1433,7 +1659,7 @@
           throw new Error(subscribeData.error || 'Unable to activate your trial.');
         }
 
-        setMainStatus(status, 'success', 'Trial started. Redirecting...');
+        setMainStatus(signupFormStatus, 'success', 'Trial started. Redirecting...');
         const nextUrl = new URL('/thankyou.html', window.location.origin);
         nextUrl.searchParams.set('flow', 'main');
         if (subscribeData.subscriptionId) {
@@ -1441,10 +1667,17 @@
         }
         window.location.href = nextUrl.toString();
       } catch (error) {
-        setMainStatus(status, 'error', error.message || 'Something went wrong. Please try again.');
-        setSubmitReady(submitBtn, mainCheckoutState.initialized ? confirmStepButtonContent : firstStepButtonContent);
+        setMainStatus(signupFormStatus, 'error', error.message || 'Something went wrong. Please try again.');
+        setSubmitReady(mainConfirmBtn, confirmStepButtonContent);
       }
     }
+
+    mainContinueBtn.addEventListener('click', handleContinueToCard);
+    mainBackBtn.addEventListener('click', () => {
+      setMainFormStep(1);
+      setMainStatus(signupFormStatus, 'info', 'Update your details if needed, then continue to card.');
+    });
+    setMainFormStep(1);
   </script>
 </body>
 </html>
