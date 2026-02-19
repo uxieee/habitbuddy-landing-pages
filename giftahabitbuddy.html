@@ -11,6 +11,7 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script>
     (function () {
+      document.documentElement.classList.add('js');
       var storageKey = 'habitbuddy-theme';
       var theme = 'dark';
       try {
@@ -543,10 +544,15 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .reveal {
-      opacity: 0; transform: translateY(30px);
+      opacity: 1;
+      transform: none;
       transition: opacity 0.7s ease, transform 0.7s ease;
     }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .js .reveal.visible { opacity: 1; transform: translateY(0); }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after {
@@ -589,11 +595,24 @@
       .nav__inner { padding: 0 14px; }
       .nav__actions { gap: 8px; }
       .theme-toggle { padding: 8px 11px; }
-      .nav__back { font-size: 13px; }
+      .nav__back {
+        font-size: 0;
+        gap: 0;
+        padding: 8px;
+      }
+      .nav__back svg {
+        width: 18px;
+        height: 18px;
+      }
       .gift-hero { padding: 86px 0 18px; }
       .gift-hero__icon { font-size: 34px; margin-bottom: 10px; }
-      .gift-hero__title { font-size: clamp(30px, 10.8vw, 40px); margin-bottom: 0; }
-      .gift-hero__sub { display: none; }
+      .gift-hero__title { font-size: clamp(30px, 10.8vw, 40px); margin-bottom: 8px; }
+      .gift-hero__sub {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 auto 14px;
+      }
       .gift-form-section { padding-top: 16px; }
       .gift-form { padding: 18px; }
       .btn-gift { padding: 13px; }
@@ -626,7 +645,7 @@
     <div class="container">
       <div class="gift-hero__icon">&#127873;</div>
       <h1 class="gift-hero__title">
-        Give the Gift of<br>Better <em>Habits</em>
+        Give the Gift of <br>Better <em>Habits</em>
       </h1>
       <p class="gift-hero__sub">
         Know someone who keeps saying "I'll start Monday"? Gift them a Habit Buddy subscription and give them the daily nudge that actually works.

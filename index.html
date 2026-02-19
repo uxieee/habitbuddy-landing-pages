@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
     (function () {
+      document.documentElement.classList.add('js');
       var storageKey = 'habitbuddy-theme';
       var theme = 'dark';
       try {
@@ -46,7 +47,7 @@
       --text-muted: #B8B1C5;
       --phone-text-primary: #F5F3EF;
       --phone-text-muted: #B8B1C5;
-      --step-number-color: #A6692D;
+      --step-number-color: #C98534;
       --border: #2A2832;
       --border-light: #3A3845;
       --nav-bg: #0C0B0Fcc;
@@ -74,7 +75,7 @@
       --text-muted: #4F495F;
       --phone-text-primary: #F5F3EF;
       --phone-text-muted: #B8B1C5;
-      --step-number-color: #B56D24;
+      --step-number-color: #A35A1A;
       --border: #DAD3E2;
       --border-light: #C8BED4;
       --nav-bg: #F6F3EDe0;
@@ -961,10 +962,11 @@
       cursor: pointer;
     }
     .phone-preview-modal__body {
-      max-height: none;
-      overflow: visible;
+      max-height: calc(88vh - 70px);
+      overflow: auto;
       display: flex;
       justify-content: center;
+      padding-right: 2px;
     }
     .phone-preview-modal .phone-frame {
       width: min(82vw, 264px);
@@ -1283,11 +1285,15 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .reveal {
-      opacity: 0;
-      transform: translateY(30px);
+      opacity: 1;
+      transform: none;
       transition: opacity 0.7s ease, transform 0.7s ease;
     }
-    .reveal.visible {
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .js .reveal.visible {
       opacity: 1;
       transform: translateY(0);
     }
@@ -1414,6 +1420,35 @@
       .theme-toggle--mobile { padding: 8px 10px; font-size: 11px; }
       .phone-frame { width: 188px; }
       .phone-screen { min-height: 304px; padding: 14px 10px; }
+      .step-card__number {
+        color: var(--accent-amber);
+        opacity: 0.72;
+      }
+      .phone-preview-modal__panel {
+        width: calc(100vw - 20px);
+        padding: 12px 10px 10px;
+      }
+      .phone-preview-modal__title {
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      .phone-preview-modal .phone-frame {
+        width: min(210px, 85vw);
+        padding: 8px;
+      }
+      .phone-preview-modal .phone-screen {
+        height: min(52vh, 360px);
+        padding: 12px 9px;
+      }
+      .phone-preview-modal .sms-bubble {
+        font-size: 10.5px;
+        line-height: 1.35;
+        padding: 7px 9px;
+      }
+      .phone-preview-modal .sms-time {
+        font-size: 8px;
+        margin-bottom: 5px;
+      }
     }
   </style>
 </head>
@@ -2081,6 +2116,16 @@
       const sourceFrame = document.querySelector('.phone-mockup .phone-frame');
       if (!sourceFrame) return;
       target.appendChild(sourceFrame.cloneNode(true));
+      if (window.matchMedia('(max-width: 480px)').matches) {
+        const bubbles = target.querySelectorAll('.sms-bubble');
+        bubbles.forEach((bubble, index) => {
+          if (index > 3) bubble.remove();
+        });
+        const times = target.querySelectorAll('.sms-time');
+        times.forEach((timeEl, index) => {
+          if (index > 1) timeEl.remove();
+        });
+      }
     }
     function openPhonePreviewModal() {
       const modal = document.getElementById('phonePreviewModal');
