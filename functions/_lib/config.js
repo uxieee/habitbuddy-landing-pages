@@ -11,10 +11,11 @@ const DEFAULTS = {
   GHL_STAGE_MAX_SUPPORT_PAYING_ID: '7715d018-dcba-4037-b261-aa0f7ffeba83',
   GHL_STAGE_THREE_MONTH_PASS_ID: '62071a34-2e22-41a6-8fcb-450ea698f29e',
 
-  STRIPE_MAIN_TRIAL_PRICE_ID: 'price_1SafOpAuSIQTND927csHvIkZ',
-  STRIPE_GIFT_1M_PRICE_ID: 'price_1T2SYFAuSIQTND92WVcZHe6r',
-  STRIPE_GIFT_3M_PRICE_ID: 'price_1T2SZfAuSIQTND9285U7Fxey',
+  STRIPE_MAIN_TRIAL_PRICE_ID: '',
+  STRIPE_GIFT_1M_PRICE_ID: '',
+  STRIPE_GIFT_3M_PRICE_ID: '',
   STRIPE_GIFT_6M_PRICE_ID: '',
+  HB_PLAN_CATALOG_JSON: '',
 
   TRIAL_PERIOD_DAYS: '7',
 
@@ -39,9 +40,152 @@ function readEnv(env, key) {
   return DEFAULTS[key] ?? '';
 }
 
+function cleanText(value) {
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
+}
+
+function toFiniteNumber(value, fallbackValue) {
+  const n = Number(value);
+  if (Number.isFinite(n)) return n;
+  return fallbackValue;
+}
+
+function toPositiveInteger(value, fallbackValue) {
+  const n = Number(value);
+  if (Number.isFinite(n) && n > 0) return Math.floor(n);
+  return fallbackValue;
+}
+
+function normalizeAliases(key, aliases = []) {
+  const items = [key, ...(Array.isArray(aliases) ? aliases : [])]
+    .map((item) => cleanText(item).toLowerCase())
+    .filter(Boolean);
+  return [...new Set(items)];
+}
+
+function normalizePlanDefinition(key, rawPlan = {}, fallback = {}) {
+  const normalizedKey = cleanText(rawPlan.key || key).toLowerCase() || cleanText(fallback.key || key).toLowerCase();
+  const normalizedType = cleanText(rawPlan.type || fallback.type).toLowerCase();
+  const type = normalizedType === 'main' ? 'main' : 'gift';
+  const normalizedMode = cleanText(rawPlan.mode || fallback.mode).toLowerCase();
+  const mode = normalizedMode || (type === 'main' ? 'subscription' : 'payment');
+
+  const amountValue = rawPlan.amount ?? fallback.amount;
+  const amount = toFiniteNumber(amountValue, null);
+
+  const trialDaysRaw = rawPlan.trialPeriodDays ?? rawPlan.trialDays ?? fallback.trialPeriodDays;
+  const trialPeriodDays = toPositiveInteger(trialDaysRaw, undefined);
+
+  return {
+    key: normalizedKey,
+    type,
+    mode,
+    label: cleanText(rawPlan.label || fallback.label || normalizedKey),
+    priceId: cleanText(rawPlan.priceId ?? fallback.priceId),
+    stageId: cleanText(rawPlan.stageId ?? fallback.stageId),
+    amount: amount === null ? undefined : amount,
+    trialPeriodDays,
+    aliases: normalizeAliases(normalizedKey, rawPlan.aliases ?? fallback.aliases),
+  };
+}
+
+function parsePlanCatalogJson(rawJson) {
+  if (!rawJson) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch (_error) {
+    const error = new Error('HB_PLAN_CATALOG_JSON must be valid JSON.');
+    error.status = 500;
+    throw error;
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    const error = new Error('HB_PLAN_CATALOG_JSON must be a JSON object keyed by plan key.');
+    error.status = 500;
+    throw error;
+  }
+
+  return parsed;
+}
+
+function createDefaultPlanCatalog(values) {
+  return {
+    main_trial: normalizePlanDefinition('main_trial', {
+      type: 'main',
+      mode: 'subscription',
+      label: 'Max Support Trial',
+      priceId: values.stripeMainTrialPriceId,
+      stageId: values.stageMaxSupportTrialId,
+      amount: 29.99,
+      trialPeriodDays: values.trialPeriodDays,
+      aliases: ['trial', 'max_support_trial'],
+    }),
+    gift_1m: normalizePlanDefinition('gift_1m', {
+      type: 'gift',
+      mode: 'payment',
+      label: '1 Month Gift',
+      priceId: values.stripeGift1mPriceId,
+      stageId: values.stageMaxSupportPayingId,
+      amount: 29.99,
+      aliases: ['1month', '1m'],
+    }),
+    gift_3m: normalizePlanDefinition('gift_3m', {
+      type: 'gift',
+      mode: 'payment',
+      label: '3 Month Gift',
+      priceId: values.stripeGift3mPriceId,
+      stageId: values.stageThreeMonthPassId,
+      amount: 79.99,
+      aliases: ['3months', '3m'],
+    }),
+    gift_6m: normalizePlanDefinition('gift_6m', {
+      type: 'gift',
+      mode: 'payment',
+      label: '6 Month Gift',
+      priceId: values.stripeGift6mPriceId,
+      stageId: values.stageThreeMonthPassId,
+      amount: 139,
+      aliases: ['6months', '6m'],
+    }),
+  };
+}
+
+function buildPlanCatalog(values, rawCatalogJson) {
+  const baseCatalog = createDefaultPlanCatalog(values);
+  const overrides = parsePlanCatalogJson(rawCatalogJson);
+  if (!overrides) {
+    return baseCatalog;
+  }
+
+  const merged = { ...baseCatalog };
+  Object.entries(overrides).forEach(([key, rawPlan]) => {
+    const fallback = merged[key] || {};
+    merged[key] = normalizePlanDefinition(key, rawPlan || {}, fallback);
+  });
+
+  return merged;
+}
+
 export function getConfig(env, request) {
   const requestUrl = new URL(request.url);
   const origin = readEnv(env, 'PUBLIC_BASE_URL') || requestUrl.origin;
+  const trialPeriodDays = toPositiveInteger(readEnv(env, 'TRIAL_PERIOD_DAYS'), Number(DEFAULTS.TRIAL_PERIOD_DAYS));
+
+  const baseValues = {
+    stripeMainTrialPriceId: readEnv(env, 'STRIPE_MAIN_TRIAL_PRICE_ID'),
+    stripeGift1mPriceId: readEnv(env, 'STRIPE_GIFT_1M_PRICE_ID'),
+    stripeGift3mPriceId: readEnv(env, 'STRIPE_GIFT_3M_PRICE_ID'),
+    stripeGift6mPriceId: readEnv(env, 'STRIPE_GIFT_6M_PRICE_ID'),
+    stageMaxSupportTrialId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_TRIAL_ID'),
+    stageMaxSupportPayingId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_PAYING_ID'),
+    stageThreeMonthPassId: readEnv(env, 'GHL_STAGE_THREE_MONTH_PASS_ID'),
+    trialPeriodDays,
+  };
+
+  const planCatalog = buildPlanCatalog(baseValues, readEnv(env, 'HB_PLAN_CATALOG_JSON'));
 
   return {
     ghlApiBase: readEnv(env, 'GHL_API_BASE'),
@@ -64,7 +208,8 @@ export function getConfig(env, request) {
     stripeGift3mPriceId: readEnv(env, 'STRIPE_GIFT_3M_PRICE_ID'),
     stripeGift6mPriceId: readEnv(env, 'STRIPE_GIFT_6M_PRICE_ID'),
 
-    trialPeriodDays: Number(readEnv(env, 'TRIAL_PERIOD_DAYS') || DEFAULTS.TRIAL_PERIOD_DAYS),
+    trialPeriodDays,
+    planCatalog,
 
     giftContactAssociationKey: readEnv(env, 'GHL_GIFT_CONTACT_ASSOCIATION_KEY'),
 

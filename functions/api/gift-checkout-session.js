@@ -12,6 +12,7 @@ export async function onRequestPost(context) {
       sessionId: result.session.id,
       contactId: result.captured.gifterContact.id,
       opportunityId: result.captured.opportunity.id,
+      planKey: result.captured.giftPlan.key,
       giftDuration: result.captured.giftPlan.key,
       giftPriceId: result.captured.giftPlan.priceId,
     });

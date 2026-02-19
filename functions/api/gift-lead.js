@@ -10,6 +10,7 @@ export async function onRequestPost(context) {
       success: true,
       contactId: result.gifterContact.id,
       opportunityId: result.opportunity.id,
+      planKey: result.giftPlan.key,
       giftDuration: result.giftPlan.key,
       giftPriceId: result.giftPlan.priceId,
     });

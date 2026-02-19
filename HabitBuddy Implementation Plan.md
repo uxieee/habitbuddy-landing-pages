@@ -38,11 +38,11 @@ flowchart LR
 
 From the current local HTML files:
 - `/index.html` has improved funnel structure, unified CTA language, pricing/trial messaging, FAQ pricing answer, and light/dark toggle
-- `/maxsupport.html` has a real-looking signup form UX, but submit handler is still mock redirect (`window.location.href = 'thankyou.html'`)
-- `/giftahabitbuddy.html` has gift plans and gift form UX, but submit handler is still mock redirect (`window.location.href = 'thankyou.html?gift=true'`)
-- `/thankyou.html` is present and already supports normal vs gift confirmation state
+- `/maxsupport.html` posts to `/api/main-checkout-session`, captures lead in GHL, and redirects to Stripe Checkout
+- `/giftahabitbuddy.html` posts to `/api/gift-checkout-session`, captures gifting lead data in GHL, and redirects to Stripe Checkout
+- `/thankyou.html` is present and supports normal vs gift confirmation state
 
-Meaning: **Design is much stronger now, but backend integrations are not wired yet.**
+Meaning: **Design and backend wiring are now in place; final go-live work is environment configuration, webhook setup, and end-to-end live testing.**
 
 ## 4) Alignment with HabitBuddy Audit Report
 

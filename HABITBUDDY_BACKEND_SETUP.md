@@ -22,6 +22,8 @@ Shared utilities:
 Frontend wiring:
 - `maxsupport.html` now posts to `/api/main-checkout-session` and redirects to Stripe Checkout.
 - `giftahabitbuddy.html` now posts to `/api/gift-checkout-session` and redirects to Stripe Checkout.
+- forms now send stable plan keys (`main_trial`, `gift_1m`, `gift_3m`) to backend.
+- `_redirects` maps clean paths (`/home`, `/maxsupport`, `/giftahabitbuddy`, `/thankyou`) to the corresponding HTML files.
 
 ## Core behavior
 
@@ -44,14 +46,40 @@ Frontend wiring:
      - 1-month -> `Max Support (Paying)`
      - 3-month -> `Three Month Pass`
 
-## Required env vars
+## Required env vars (baseline mode)
 
 Copy `.dev.vars.example` and set:
 - `GHL_PRIVATE_TOKEN`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_MAIN_TRIAL_PRICE_ID`
+- `STRIPE_GIFT_1M_PRICE_ID`
+- `STRIPE_GIFT_3M_PRICE_ID`
 
-Everything else has defaults for your current HabitBuddy test account, but can be overridden.
+The backend now fails fast if Stripe price IDs are missing, so these must be explicitly configured.
+
+## Plan catalog mode (recommended for future changes)
+
+You can keep baseline mode, or switch to catalog mode by setting:
+- `HB_PLAN_CATALOG_JSON`
+
+When present, this JSON drives plan behavior (price ID, stage ID, amount, aliases) without code edits.
+
+High-level shape:
+- keys are your internal `plan_key` values
+- each plan supports:
+  - `type`: `main` or `gift`
+  - `mode`: `subscription` or `payment`
+  - `label`
+  - `priceId`
+  - `stageId`
+  - `amount`
+  - optional `trialPeriodDays` (for subscription trials)
+  - optional `aliases` (for backward compatibility)
+
+Practical rule:
+- updating price/stage for existing plan = env update + deploy
+- adding a brand-new plan still needs frontend UI option, but backend checkout logic stays config-driven
 
 ## Stripe webhook setup
 

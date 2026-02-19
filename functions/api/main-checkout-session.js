@@ -10,6 +10,7 @@ export async function onRequestPost(context) {
       success: true,
       checkoutUrl: result.session.url,
       sessionId: result.session.id,
+      planKey: result.captured.mainPlan?.key || 'main_trial',
       contactId: result.captured.contact.id,
       opportunityId: result.captured.opportunity.id,
     });

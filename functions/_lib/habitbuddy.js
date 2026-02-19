@@ -23,33 +23,84 @@ const TAGS = {
   giftRecipient: 'hb_gift_recipient',
 };
 
-const GIFT_PLAN_BY_DURATION = {
-  '1month': {
-    key: '1month',
-    label: '1 Month Gift',
-    amount: 29.99,
-    priceConfigKey: 'stripeGift1mPriceId',
-    stageConfigKey: 'stageMaxSupportPayingId',
-  },
-  '3months': {
-    key: '3months',
-    label: '3 Month Gift',
-    amount: 79.99,
-    priceConfigKey: 'stripeGift3mPriceId',
-    stageConfigKey: 'stageThreeMonthPassId',
-  },
-  '6months': {
-    key: '6months',
-    label: '6 Month Gift',
-    amount: 139,
-    priceConfigKey: 'stripeGift6mPriceId',
-    stageConfigKey: 'stageThreeMonthPassId',
-  },
-};
+const MAIN_TRIAL_PLAN_KEY = 'main_trial';
 
 function cleanText(value) {
   if (value === undefined || value === null) return '';
   return String(value).trim();
+}
+
+function normalizePlanReference(value) {
+  return cleanText(value).toLowerCase();
+}
+
+function toFiniteNumber(value, fallbackValue = undefined) {
+  const n = Number(value);
+  if (Number.isFinite(n)) return n;
+  return fallbackValue;
+}
+
+function listPlans(config, type) {
+  const plans = Object.values(config?.planCatalog || {}).filter((plan) => plan && typeof plan === 'object');
+  if (!type) return plans;
+  return plans.filter((plan) => normalizePlanReference(plan.type) === normalizePlanReference(type));
+}
+
+function doesPlanMatchReference(plan, normalizedReference) {
+  if (!plan || !normalizedReference) return false;
+  if (normalizePlanReference(plan.key) === normalizedReference) return true;
+  const aliases = Array.isArray(plan.aliases) ? plan.aliases : [];
+  return aliases.some((alias) => normalizePlanReference(alias) === normalizedReference);
+}
+
+function resolvePlan(config, planReference, type, fallbackPlanKey = '') {
+  const normalizedReference = normalizePlanReference(planReference) || normalizePlanReference(fallbackPlanKey);
+  const plans = listPlans(config, type);
+  const matchedPlan = plans.find((plan) => doesPlanMatchReference(plan, normalizedReference));
+
+  if (!matchedPlan) {
+    const error = new Error(type === 'gift' ? 'Unsupported gift duration selected.' : 'Unsupported plan selected.');
+    error.status = 400;
+    throw error;
+  }
+
+  const label = cleanText(matchedPlan.label || matchedPlan.key || 'Selected plan');
+  const priceId = cleanText(matchedPlan.priceId);
+  if (!priceId) {
+    const error = new Error(`${label} is not active yet.`);
+    error.status = 400;
+    throw error;
+  }
+
+  const stageId = cleanText(matchedPlan.stageId);
+  if (!stageId) {
+    const error = new Error(`Missing stage configuration for ${label}.`);
+    error.status = 500;
+    throw error;
+  }
+
+  const amount = toFiniteNumber(matchedPlan.amount);
+  const trialPeriodDays = toFiniteNumber(matchedPlan.trialPeriodDays);
+
+  return {
+    ...matchedPlan,
+    key: normalizePlanReference(matchedPlan.key || normalizedReference),
+    label,
+    type: normalizePlanReference(matchedPlan.type) || type,
+    mode: normalizePlanReference(matchedPlan.mode),
+    priceId,
+    stageId,
+    ...(Number.isFinite(amount) ? { amount } : {}),
+    ...(Number.isFinite(trialPeriodDays) && trialPeriodDays > 0 ? { trialPeriodDays: Math.floor(trialPeriodDays) } : {}),
+  };
+}
+
+function resolveMainPlan(config, planReference) {
+  return resolvePlan(config, planReference, 'main', MAIN_TRIAL_PLAN_KEY);
+}
+
+export function resolveGiftPlan(config, planReference) {
+  return resolvePlan(config, planReference, 'gift');
 }
 
 function cleanEmail(value) {
@@ -176,6 +227,7 @@ function normalizeMainLeadPayload(payload) {
   const phone = cleanPhone(payload.phone);
   const habitFocus = cleanText(payload.habit_focus || payload.habitFocus);
   const checkinTime = cleanText(payload.checkin_time || payload.checkinTime);
+  const planKey = normalizePlanReference(payload.plan_key || payload.planKey || MAIN_TRIAL_PLAN_KEY);
 
   if (!firstName) {
     const error = new Error('First name is required.');
@@ -189,7 +241,7 @@ function normalizeMainLeadPayload(payload) {
     throw error;
   }
 
-  return { firstName, email, phone, habitFocus, checkinTime };
+  return { firstName, email, phone, habitFocus, checkinTime, planKey };
 }
 
 function normalizeGiftLeadPayload(payload) {
@@ -198,7 +250,7 @@ function normalizeGiftLeadPayload(payload) {
   const recipientName = cleanText(payload.recipient_name || payload.recipientName);
   const recipientPhone = cleanPhone(payload.recipient_phone || payload.recipientPhone);
   const recipientEmail = cleanEmail(payload.recipient_email || payload.recipientEmail);
-  const duration = cleanText(payload.gift_duration || payload.giftDuration).toLowerCase();
+  const planKey = normalizePlanReference(payload.plan_key || payload.planKey || payload.gift_duration || payload.giftDuration);
   const message = cleanText(payload.gift_message || payload.giftMessage);
 
   if (!senderName) {
@@ -225,8 +277,8 @@ function normalizeGiftLeadPayload(payload) {
     throw error;
   }
 
-  if (!duration) {
-    const error = new Error('Gift duration is required.');
+  if (!planKey) {
+    const error = new Error('Gift plan is required.');
     error.status = 400;
     throw error;
   }
@@ -237,56 +289,39 @@ function normalizeGiftLeadPayload(payload) {
     recipientName,
     recipientPhone,
     recipientEmail,
-    duration,
+    planKey,
     message,
   };
 }
 
-export function resolveGiftPlan(config, duration) {
-  const key = String(duration || '').toLowerCase();
-  const plan = GIFT_PLAN_BY_DURATION[key];
-  if (!plan) {
-    const error = new Error('Unsupported gift duration selected.');
-    error.status = 400;
-    throw error;
-  }
-
-  const priceId = config[plan.priceConfigKey];
-  if (!priceId) {
-    const error = new Error(`${plan.label} is not active yet.`);
-    error.status = 400;
-    throw error;
-  }
-
-  const stageId = config[plan.stageConfigKey];
-  if (!stageId) {
-    const error = new Error(`Missing stage configuration for ${plan.label}.`);
-    error.status = 500;
-    throw error;
-  }
-
-  return {
-    ...plan,
-    priceId,
-    stageId,
-  };
-}
-
 function resolveGiftPlanFromMetadata(config, metadata) {
-  const duration = cleanText(metadata?.giftDuration || metadata?.gift_duration).toLowerCase();
-  if (duration && GIFT_PLAN_BY_DURATION[duration]) {
-    return resolveGiftPlan(config, duration);
+  const planCandidates = [
+    metadata?.planKey,
+    metadata?.plan_key,
+    metadata?.giftPlanKey,
+    metadata?.gift_plan_key,
+    metadata?.giftDuration,
+    metadata?.gift_duration,
+  ]
+    .map((candidate) => normalizePlanReference(candidate))
+    .filter(Boolean);
+
+  for (const candidate of planCandidates) {
+    try {
+      return resolveGiftPlan(config, candidate);
+    } catch (error) {
+      const message = String(error?.message || '');
+      if (error?.status === 400 && message.includes('Unsupported gift duration selected.')) continue;
+      throw error;
+    }
   }
 
   const priceId = cleanText(metadata?.giftPriceId || metadata?.priceId);
-  if (priceId && priceId === config.stripeGift1mPriceId) {
-    return resolveGiftPlan(config, '1month');
-  }
-  if (priceId && priceId === config.stripeGift3mPriceId) {
-    return resolveGiftPlan(config, '3months');
-  }
-  if (priceId && config.stripeGift6mPriceId && priceId === config.stripeGift6mPriceId) {
-    return resolveGiftPlan(config, '6months');
+  if (priceId) {
+    const match = listPlans(config, 'gift').find((plan) => cleanText(plan.priceId) === priceId);
+    if (match?.key) {
+      return resolveGiftPlan(config, match.key);
+    }
   }
 
   const error = new Error('Unable to resolve gift plan from checkout metadata.');
@@ -299,6 +334,7 @@ export async function captureMainLead(env, payload) {
   assertConfig(config, ['ghlPrivateToken', 'locationId', 'pipelineId', 'stageAbandonedCartId']);
 
   const lead = normalizeMainLeadPayload(payload);
+  const mainPlan = resolveMainPlan(config, lead.planKey);
 
   const contact = await upsertContact(env, {
     locationId: config.locationId,
@@ -313,13 +349,14 @@ export async function captureMainLead(env, payload) {
   const opportunity = await upsertOpportunityAtStage(env, {
     contactId: contact.id,
     stageId: config.stageAbandonedCartId,
-    name: buildOpportunityName(lead.firstName, 'Max Support'),
+    name: buildOpportunityName(lead.firstName, mainPlan.label || 'Max Support'),
     source: 'HabitBuddy Max Support Form',
-    monetaryValue: 29.99,
+    monetaryValue: mainPlan.amount,
   });
 
   return {
     lead,
+    mainPlan,
     contact,
     opportunity,
   };
@@ -330,7 +367,7 @@ export async function captureGiftLead(env, payload) {
   assertConfig(config, ['ghlPrivateToken', 'locationId', 'pipelineId', 'stageAbandonedCartGiftingId']);
 
   const lead = normalizeGiftLeadPayload(payload);
-  const giftPlan = resolveGiftPlan(config, lead.duration);
+  const giftPlan = resolveGiftPlan(config, lead.planKey);
 
   const senderNameParts = splitName(lead.senderName);
   const gifterContact = await upsertContact(env, {
@@ -378,22 +415,24 @@ export async function captureGiftLead(env, payload) {
 
 export async function createMainCheckoutSessionForLead(env, request, payload) {
   const config = getConfig(env, request);
-  assertConfig(config, [
-    'stripeSecretKey',
-    'stripeMainTrialPriceId',
-    'mainSuccessUrl',
-    'mainCancelUrl',
-    'stageMaxSupportTrialId',
-  ]);
+  assertConfig(config, ['stripeSecretKey', 'mainSuccessUrl', 'mainCancelUrl']);
 
   const captured = await captureMainLead(env, payload);
   const lead = captured.lead;
+  const plan = captured.mainPlan || resolveMainPlan(config, lead.planKey);
+
+  if (plan.mode && plan.mode !== 'subscription') {
+    const error = new Error(`Main plan "${plan.label}" must use subscription mode.`);
+    error.status = 500;
+    throw error;
+  }
 
   const metadata = {
     flow: 'main_trial',
+    planKey: plan.key,
     locationId: config.locationId,
     pipelineId: config.pipelineId,
-    targetStageId: config.stageMaxSupportTrialId,
+    targetStageId: plan.stageId,
     contactId: captured.contact.id,
     opportunityId: captured.opportunity.id,
     firstName: lead.firstName,
@@ -411,9 +450,9 @@ export async function createMainCheckoutSessionForLead(env, request, payload) {
     client_reference_id: captured.contact.id,
     ...(lead.email ? { customer_email: lead.email } : {}),
     phone_number_collection: { enabled: true },
-    line_items: [{ price: config.stripeMainTrialPriceId, quantity: 1 }],
+    line_items: [{ price: plan.priceId, quantity: 1 }],
     subscription_data: {
-      trial_period_days: config.trialPeriodDays,
+      trial_period_days: plan.trialPeriodDays || config.trialPeriodDays,
       metadata,
     },
     metadata,
@@ -433,8 +472,15 @@ export async function createGiftCheckoutSessionForLead(env, request, payload) {
   const lead = captured.lead;
   const plan = captured.giftPlan;
 
+  if (plan.mode && plan.mode !== 'payment') {
+    const error = new Error(`Gift plan "${plan.label}" must use payment mode.`);
+    error.status = 500;
+    throw error;
+  }
+
   const metadata = {
     flow: 'gift_purchase',
+    planKey: plan.key,
     locationId: config.locationId,
     pipelineId: config.pipelineId,
     gifterContactId: captured.gifterContact.id,
@@ -542,6 +588,7 @@ export async function processMainCheckoutCompleted(env, session) {
   const config = getConfig(env, { url: 'https://example.com' });
 
   const metadata = session?.metadata || {};
+  const plan = resolveMainPlan(config, metadata.planKey || metadata.plan_key || MAIN_TRIAL_PLAN_KEY);
   let contactId = cleanText(metadata.contactId || metadata.contact_id);
   let opportunityId = cleanText(metadata.opportunityId || metadata.opportunity_id);
 
@@ -578,18 +625,18 @@ export async function processMainCheckoutCompleted(env, session) {
   if (!opportunity) {
     opportunity = await upsertOpportunityAtStage(env, {
       contactId,
-      stageId: config.stageMaxSupportTrialId,
-      name: buildOpportunityName(cleanText(metadata.firstName || 'Member'), 'Max Support (Trial)'),
+      stageId: plan.stageId,
+      name: buildOpportunityName(cleanText(metadata.firstName || 'Member'), plan.label),
       source: 'HabitBuddy Main Checkout',
-      monetaryValue: 29.99,
+      monetaryValue: plan.amount,
     });
     opportunityId = opportunity.id;
   } else {
     opportunity = await safeUpdateOpportunity(env, opportunity.id, {
       pipelineId: config.pipelineId,
-      pipelineStageId: config.stageMaxSupportTrialId,
+      pipelineStageId: plan.stageId,
       status: 'open',
-      monetaryValue: 29.99,
+      monetaryValue: plan.amount,
     });
   }
 
