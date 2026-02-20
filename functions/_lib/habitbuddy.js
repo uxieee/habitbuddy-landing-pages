@@ -133,6 +133,11 @@ function splitName(fullName) {
   };
 }
 
+function formatDisplayName(firstName, lastName, fallback = '') {
+  const fullName = [cleanText(firstName), cleanText(lastName)].filter(Boolean).join(' ');
+  return fullName || cleanText(fallback);
+}
+
 function badRequest(message) {
   const error = new Error(message);
   error.status = 400;
@@ -292,14 +297,16 @@ async function upsertOpportunityAtStage(env, params) {
 function normalizeMainLeadPayload(payload) {
   const firstName = enforceMaxLength(cleanText(payload.first_name || payload.firstName), 80, 'First name');
   if (!firstName) throw badRequest('First name is required.');
+  const lastName = enforceMaxLength(cleanText(payload.last_name || payload.lastName), 80, 'Last name');
+  if (!lastName) throw badRequest('Last name is required.');
 
-  const email = validateEmail(payload.email, 'Email', false);
+  const email = validateEmail(payload.email, 'Email', true);
   const phone = normalizeAndValidatePhone(payload.phone, 'Phone number', true);
   const habitFocus = enforceMaxLength(cleanText(payload.habit_focus || payload.habitFocus), 160, 'Habit focus');
   const checkinTime = enforceMaxLength(cleanText(payload.checkin_time || payload.checkinTime), 64, 'Check-in time');
   const planKey = validatePlanReference(payload.plan_key || payload.planKey || MAIN_TRIAL_PLAN_KEY, 'Plan');
 
-  return { firstName, email, phone, habitFocus, checkinTime, planKey };
+  return { firstName, lastName, email, phone, habitFocus, checkinTime, planKey };
 }
 
 function normalizeGiftLeadPayload(payload) {
@@ -375,17 +382,19 @@ export async function captureMainLead(env, payload) {
   const contact = await upsertContact(env, {
     locationId: config.locationId,
     firstName: lead.firstName,
-    email: lead.email || undefined,
+    lastName: lead.lastName,
+    email: lead.email,
     phone: lead.phone,
     source: 'HabitBuddy Max Support Form',
   });
 
   await safeAddTags(env, contact.id, [TAGS.lead]);
 
+  const displayName = formatDisplayName(lead.firstName, lead.lastName, lead.firstName);
   const opportunity = await upsertOpportunityAtStage(env, {
     contactId: contact.id,
     stageId: config.stageAbandonedCartId,
-    name: buildOpportunityName(lead.firstName, mainPlan.label || 'Max Support'),
+    name: buildOpportunityName(displayName, mainPlan.label || 'Max Support'),
     source: 'HabitBuddy Max Support Form',
     monetaryValue: mainPlan.amount,
   });
@@ -451,6 +460,7 @@ export async function captureGiftLead(env, payload) {
 }
 
 function buildMainFlowMetadata(config, captured, lead, plan) {
+  const fullName = formatDisplayName(lead.firstName, lead.lastName, lead.firstName);
   return {
     flow: 'main_trial',
     planKey: plan.key,
@@ -460,6 +470,8 @@ function buildMainFlowMetadata(config, captured, lead, plan) {
     contactId: captured.contact.id,
     opportunityId: captured.opportunity.id,
     firstName: lead.firstName,
+    lastName: lead.lastName,
+    fullName,
     phone: lead.phone,
     email: lead.email,
     habitFocus: lead.habitFocus,
@@ -566,7 +578,7 @@ function setupIntentToSessionLike(setupIntent, metadataOverrides = {}) {
     customer_details: {
       email: billing.email || metadata.email || undefined,
       phone: billing.phone || metadata.phone || undefined,
-      name: billing.name || metadata.firstName || undefined,
+      name: billing.name || metadata.fullName || formatDisplayName(metadata.firstName, metadata.lastName) || undefined,
     },
   };
 }
@@ -608,15 +620,18 @@ export async function createMainSetupIntentForLead(env, request, payload) {
   }
 
   const metadata = buildMainFlowMetadata(config, captured, lead, plan);
+  const customerName = formatDisplayName(lead.firstName, lead.lastName, lead.firstName);
   const customer = await createCustomer(env, {
-    name: lead.firstName,
-    email: lead.email || undefined,
+    name: customerName,
+    email: lead.email,
     phone: lead.phone || undefined,
     metadata: {
       flow: metadata.flow,
       planKey: metadata.planKey,
       contactId: metadata.contactId,
       opportunityId: metadata.opportunityId,
+      firstName: metadata.firstName,
+      lastName: metadata.lastName,
     },
   });
 
@@ -917,7 +932,10 @@ export async function processMainCheckoutCompleted(env, session) {
   if (!contactId) {
     const email = normalizeSessionEmail(session);
     const phone = normalizeSessionPhone(session);
-    const firstName = cleanText(metadata.firstName || metadata.first_name || 'HabitBuddy Member');
+    const sessionName = cleanText(session?.customer_details?.name);
+    const sessionParts = splitName(sessionName);
+    const firstName = cleanText(metadata.firstName || metadata.first_name || sessionParts.firstName || 'HabitBuddy');
+    const lastName = cleanText(metadata.lastName || metadata.last_name || sessionParts.lastName || 'Member');
 
     if (!email && !phone) {
       const error = new Error('Main checkout completed without contact identifiers.');
@@ -928,6 +946,7 @@ export async function processMainCheckoutCompleted(env, session) {
     const contact = await upsertContact(env, {
       locationId: config.locationId,
       firstName,
+      lastName,
       email: email || undefined,
       phone: phone || undefined,
       source: 'HabitBuddy Main Checkout',
@@ -945,10 +964,15 @@ export async function processMainCheckoutCompleted(env, session) {
   }
 
   if (!opportunity) {
+    const opportunityOwnerName = formatDisplayName(
+      metadata.firstName || metadata.first_name,
+      metadata.lastName || metadata.last_name,
+      session?.customer_details?.name || 'Member',
+    );
     opportunity = await upsertOpportunityAtStage(env, {
       contactId,
       stageId: plan.stageId,
-      name: buildOpportunityName(cleanText(metadata.firstName || 'Member'), plan.label),
+      name: buildOpportunityName(opportunityOwnerName, plan.label),
       source: 'HabitBuddy Main Checkout',
       monetaryValue: plan.amount,
     });

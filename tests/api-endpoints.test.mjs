@@ -108,6 +108,89 @@ test('POST /api/main-payment-element-init enforces rate limit before business lo
   assert.equal(third.headers.get('Retry-After') !== null, true);
 });
 
+test('POST /api/main-payment-element-init requires first name, last name, email, and phone before upstream calls', async (t) => {
+  const env = {
+    ALLOWED_ORIGINS: 'https://example.com',
+    STRIPE_SECRET_KEY: 'sk_test_local',
+    STRIPE_PUBLISHABLE_KEY: 'pk_test_local',
+    STRIPE_MAIN_TRIAL_PRICE_ID: 'price_test_123',
+    GHL_PRIVATE_TOKEN: 'ghl_test_token',
+  };
+
+  const originalFetch = globalThis.fetch;
+  const upstreamCalls = [];
+  globalThis.fetch = async (...args) => {
+    upstreamCalls.push(args);
+    throw new Error('Unexpected upstream call.');
+  };
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const missingLastName = await onMainPaymentInitPost(
+    createContext('/api/main-payment-element-init', {
+      method: 'POST',
+      headers: {
+        origin: 'https://example.com',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: 'QA',
+        email: 'qa@example.com',
+        phone: '+19166868518',
+        habit_focus: 'exercise',
+        checkin_time: '8am',
+      }),
+      env,
+    }),
+  );
+  assert.equal(missingLastName.status, 400);
+  assert.equal((await readJson(missingLastName)).error, 'Last name is required.');
+  assert.equal(upstreamCalls.length, 0);
+
+  const missingEmail = await onMainPaymentInitPost(
+    createContext('/api/main-payment-element-init', {
+      method: 'POST',
+      headers: {
+        origin: 'https://example.com',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: 'QA',
+        last_name: 'Tester',
+        phone: '+19166868518',
+        habit_focus: 'exercise',
+        checkin_time: '8am',
+      }),
+      env,
+    }),
+  );
+  assert.equal(missingEmail.status, 400);
+  assert.equal((await readJson(missingEmail)).error, 'Email is required.');
+  assert.equal(upstreamCalls.length, 0);
+
+  const missingPhone = await onMainPaymentInitPost(
+    createContext('/api/main-payment-element-init', {
+      method: 'POST',
+      headers: {
+        origin: 'https://example.com',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: 'QA',
+        last_name: 'Tester',
+        email: 'qa@example.com',
+        habit_focus: 'exercise',
+        checkin_time: '8am',
+      }),
+      env,
+    }),
+  );
+  assert.equal(missingPhone.status, 400);
+  assert.equal((await readJson(missingPhone)).error, 'Phone number is required.');
+  assert.equal(upstreamCalls.length, 0);
+});
+
 test('retired lead endpoints return 410 with migration guidance', async () => {
   const [mainResponse, giftResponse] = await Promise.all([
     onMainLeadGet(createContext('/api/main-lead')),

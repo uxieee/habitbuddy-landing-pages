@@ -266,9 +266,11 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 40px;
+      padding: clamp(18px, 2.4vw, 40px);
       position: relative;
       overflow: hidden;
+      container-type: inline-size;
+      container-name: signup-form;
     }
     .signup-form::before {
       content: '';
@@ -280,7 +282,7 @@
     }
     .signup-form__header {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: clamp(14px, 1.8vw, 32px);
     }
     .signup-form__title {
       font-family: var(--font-display);
@@ -292,7 +294,18 @@
       color: var(--text-secondary);
     }
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: clamp(14px, 1.2vw, 20px);
+    }
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .form-grid--two {
+      grid-template-columns: 1fr;
+      margin-bottom: clamp(14px, 1.2vw, 20px);
+    }
+    .form-grid--two .form-group {
+      margin-bottom: 0;
     }
     .form-group label {
       display: block;
@@ -387,6 +400,11 @@
       color: #052A1C;
     }
     .form-step[hidden] { display: none; }
+    @container signup-form (min-width: 520px) {
+      .form-grid--two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
     .phone-input-group {
       display: grid;
       grid-template-columns: 120px 1fr;
@@ -946,10 +964,7 @@
       .signup-hero { padding: 68px 0 44px; }
       .signup-hero__grid { gap: 16px; }
       .signup-hero__grid > :first-child { order: 2; }
-      .signup-form {
-        order: 1;
-        padding: 22px;
-      }
+      .signup-form { order: 1; }
       .signup-form__header { margin-bottom: 14px; }
       .signup-hero__title { font-size: clamp(32px, 8.5vw, 42px); }
       .signup-hero__sub { font-size: 16px; margin-bottom: 22px; }
@@ -965,7 +980,7 @@
     }
     @media (max-width: 480px) {
       .signup-hero { padding: 60px 0 36px; }
-      .signup-form { padding: 18px; border-radius: 20px; }
+      .signup-form { border-radius: 20px; }
       .signup-form__title { font-size: 32px; }
       .form-stepper__item { font-size: 11px; padding: 8px; }
       .form-stepper__num { width: 18px; height: 18px; font-size: 10px; }
@@ -1072,13 +1087,19 @@
               </div>
             </div>
             <div class="form-step" id="mainFormStep1">
-              <div class="form-group">
-                <label for="name">Your First Name</label>
-                <input type="text" id="name" name="first_name" placeholder="Alex" autocomplete="given-name" required>
+              <div class="form-grid form-grid--two">
+                <div class="form-group">
+                  <label for="firstName">First Name</label>
+                  <input type="text" id="firstName" name="first_name" placeholder="Alex" autocomplete="given-name" required>
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Last Name</label>
+                  <input type="text" id="lastName" name="last_name" placeholder="Rivera" autocomplete="family-name" required>
+                </div>
               </div>
               <div class="form-group">
-                <label for="email">Email (Optional)</label>
-                <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" required>
               </div>
               <div class="form-group">
                 <label for="phoneLocal">Phone Number</label>
@@ -1351,7 +1372,7 @@
     <div class="container">
       <h2 class="bottom-cta__title">Ready to finally build habits that <em>stick</em>?</h2>
       <p class="bottom-cta__sub">Your first text arrives within minutes of signing up.</p>
-      <a href="#signupForm" class="btn-primary" onclick="document.getElementById('name').focus()">
+      <a href="#signupForm" class="btn-primary" onclick="document.getElementById('firstName').focus()">
         Start My Free Trial
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h11m-4-4 4 4-4 4"/></svg>
       </a>
