@@ -42,6 +42,7 @@
       --green: #34D399;
       --accent-green: #34D399;
       --green-soft: #34D39920;
+      --hero-emphasis: #F3B365;
       --text-primary: #F5F3EF;
       --text-secondary: #CAC4D5;
       --text-muted: #B8B1C5;
@@ -70,6 +71,7 @@
       --accent-green: #11784E;
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
+      --hero-emphasis: #8A4304;
       --text-primary: #1D1A24;
       --text-secondary: #3F394F;
       --text-muted: #4F495F;
@@ -107,7 +109,7 @@
       width: 600px; height: 600px;
       background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
       top: -200px; right: -200px;
-      opacity: 0.15;
+      opacity: 0.08;
     }
     .ambient-orb--purple {
       width: 500px; height: 500px;
@@ -289,7 +291,7 @@
     }
     .hero__title em {
       font-style: italic;
-      color: var(--accent-amber);
+      color: var(--hero-emphasis);
     }
     .hero__sub {
       font-size: 18px;
@@ -1281,7 +1283,7 @@
 
     /* ===== ANIMATIONS ===== */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 1; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .reveal {
@@ -1489,6 +1491,7 @@
     </div>
   </nav>
 
+  <main id="main-content">
   <!-- ===== HERO ===== -->
   <section class="hero">
     <div class="container">
@@ -1680,7 +1683,7 @@
         <table class="comparison-table">
           <thead>
             <tr>
-              <th></th>
+              <th scope="col">Feature</th>
               <th>Habit Apps</th>
               <th>Willpower</th>
               <th>Human Coach</th>
@@ -2057,6 +2060,7 @@
       </p>
     </div>
   </section>
+  </main>
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
@@ -2074,7 +2078,7 @@
   </footer>
 
   <!-- Mobile Phone Preview Modal -->
-  <div class="phone-preview-modal" id="phonePreviewModal" aria-hidden="true">
+  <div class="phone-preview-modal" id="phonePreviewModal" aria-hidden="true" inert>
     <div class="phone-preview-modal__backdrop" onclick="closePhonePreviewModal()"></div>
     <div class="phone-preview-modal__panel" role="dialog" aria-modal="true" aria-label="Sample conversation preview">
       <button class="phone-preview-modal__close" type="button" onclick="closePhonePreviewModal()" aria-label="Close conversation preview">&times;</button>
@@ -2088,7 +2092,7 @@
     <div class="video-modal__backdrop" onclick="closeVideoModal()"></div>
     <div class="video-modal__content">
       <button class="video-modal__close" onclick="closeVideoModal()">&times;</button>
-      <iframe id="videoModalIframe" src="" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <iframe id="videoModalIframe" title="Customer testimonial video" src="" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
   </div>
 
@@ -2130,6 +2134,7 @@
     function openPhonePreviewModal() {
       const modal = document.getElementById('phonePreviewModal');
       hydratePhonePreviewModal();
+      modal.removeAttribute('inert');
       modal.classList.add('active');
       modal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
@@ -2138,6 +2143,7 @@
       const modal = document.getElementById('phonePreviewModal');
       modal.classList.remove('active');
       modal.setAttribute('aria-hidden', 'true');
+      modal.setAttribute('inert', '');
       document.body.style.overflow = '';
     }
 

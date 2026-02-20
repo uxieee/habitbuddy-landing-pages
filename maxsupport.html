@@ -44,6 +44,8 @@
       --green: #34D399;
       --accent-green: #34D399;
       --green-soft: #34D39920;
+      --hero-emphasis: #F2B56A;
+      --hero-badge-text: #8BF0C8;
       --text-primary: #F5F3EF;
       --text-secondary: #CAC4D5;
       --text-muted: #B8B1C5;
@@ -65,6 +67,8 @@
       --accent-green: #11784E;
       --amber-soft: #E8923E22;
       --green-soft: #34D39926;
+      --hero-emphasis: #7A3E04;
+      --hero-badge-text: #0C5D3E;
       --text-primary: #1D1A24;
       --text-secondary: #3F394F;
       --text-muted: #4F495F;
@@ -97,13 +101,13 @@
       background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
       top: -100px; left: 50%;
       transform: translateX(-50%);
-      opacity: 0.12;
+      opacity: 0.03;
     }
     .ambient-orb--2 {
       width: 400px; height: 400px;
       background: radial-gradient(circle, #7C3AED 0%, transparent 70%);
       bottom: 10%; right: -150px;
-      opacity: 0.06;
+      opacity: 0.03;
     }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
@@ -193,7 +197,7 @@
       border-radius: 100px;
       font-size: 13px;
       font-weight: 600;
-      color: var(--accent-green);
+      color: var(--hero-badge-text);
       margin-bottom: 24px;
     }
     .signup-hero__badge .dot {
@@ -214,7 +218,7 @@
     }
     .signup-hero__title em {
       font-style: italic;
-      color: var(--accent-amber);
+      color: var(--hero-emphasis);
     }
     .signup-hero__sub {
       font-size: 18px;
@@ -245,7 +249,7 @@
     .signup-hero__price-free {
       font-family: var(--font-display);
       font-size: 42px;
-      color: var(--accent-green);
+      color: var(--hero-badge-text);
     }
     .signup-hero__price-after {
       font-size: 15px;
@@ -899,7 +903,7 @@
 
     /* Animations */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 1; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .reveal {
@@ -1002,6 +1006,7 @@
     </div>
   </nav>
 
+  <main id="main-content">
   <!-- HERO: SIGNUP -->
   <section class="signup-hero">
     <div class="container">
@@ -1356,6 +1361,7 @@
       </p>
     </div>
   </section>
+  </main>
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -1376,7 +1382,7 @@
     <div class="video-modal__backdrop" onclick="closeVideoModal()"></div>
     <div class="video-modal__content">
       <button class="video-modal__close" onclick="closeVideoModal()">&times;</button>
-      <iframe id="videoModalIframe" src="" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <iframe id="videoModalIframe" title="Customer testimonial video" src="" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
   </div>
 

@@ -128,10 +128,9 @@ async function handlePaymentIntentEvent(env, event) {
 export async function onRequestPost(context) {
   try {
     const config = getConfig(context.env, context.request);
-    assertConfig(config, ['stripeWebhookSecret', 'ghlPrivateToken', 'locationId', 'pipelineId']);
-
     const signature = context.request.headers.get('stripe-signature');
     const rawBody = await readRawBodyWithLimit(context.request, config.maxWebhookBodyBytes);
+    assertConfig(config, ['stripeWebhookSecret', 'ghlPrivateToken', 'locationId', 'pipelineId']);
 
     const isValid = await verifyStripeWebhookSignature(rawBody, signature, config.stripeWebhookSecret);
     if (!isValid) {
