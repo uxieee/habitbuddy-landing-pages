@@ -15,7 +15,6 @@ import {
   isRelationNotFoundError,
 } from './ghl.js';
 import {
-  createCheckoutSession,
   createCustomer,
   createSetupIntent,
   retrieveSetupIntent,
@@ -591,77 +590,6 @@ function paymentIntentToSessionLike(paymentIntent, metadataOverrides = {}) {
       phone: billing.phone || metadata.recipientPhone || metadata.recipient_phone || undefined,
       name: billing.name || metadata.senderName || metadata.sender_name || undefined,
     },
-  };
-}
-
-export async function createMainCheckoutSessionForLead(env, request, payload) {
-  const config = getConfig(env, request);
-  assertConfig(config, ['stripeSecretKey', 'mainSuccessUrl', 'mainCancelUrl']);
-
-  const captured = await captureMainLead(env, payload);
-  const lead = captured.lead;
-  const plan = captured.mainPlan || resolveMainPlan(config, lead.planKey);
-
-  if (plan.mode && plan.mode !== 'subscription') {
-    const error = new Error(`Main plan "${plan.label}" must use subscription mode.`);
-    error.status = 500;
-    throw error;
-  }
-
-  const metadata = buildMainFlowMetadata(config, captured, lead, plan);
-
-  const session = await createCheckoutSession(env, {
-    mode: 'subscription',
-    success_url: config.mainSuccessUrl,
-    cancel_url: config.mainCancelUrl,
-    allow_promotion_codes: true,
-    client_reference_id: captured.contact.id,
-    ...(lead.email ? { customer_email: lead.email } : {}),
-    phone_number_collection: { enabled: true },
-    line_items: [{ price: plan.priceId, quantity: 1 }],
-    subscription_data: {
-      trial_period_days: plan.trialPeriodDays || config.trialPeriodDays,
-      metadata,
-    },
-    metadata,
-  });
-
-  return {
-    captured,
-    session,
-  };
-}
-
-export async function createGiftCheckoutSessionForLead(env, request, payload) {
-  const config = getConfig(env, request);
-  assertConfig(config, ['stripeSecretKey', 'giftSuccessUrl', 'giftCancelUrl']);
-
-  const captured = await captureGiftLead(env, payload);
-  const lead = captured.lead;
-  const plan = captured.giftPlan;
-
-  if (plan.mode && plan.mode !== 'payment') {
-    const error = new Error(`Gift plan "${plan.label}" must use payment mode.`);
-    error.status = 500;
-    throw error;
-  }
-
-  const metadata = buildGiftFlowMetadata(config, captured, lead, plan);
-
-  const session = await createCheckoutSession(env, {
-    mode: 'payment',
-    success_url: config.giftSuccessUrl,
-    cancel_url: config.giftCancelUrl,
-    allow_promotion_codes: true,
-    client_reference_id: captured.opportunity.id,
-    customer_email: lead.senderEmail,
-    line_items: [{ price: plan.priceId, quantity: 1 }],
-    metadata,
-  });
-
-  return {
-    captured,
-    session,
   };
 }
 

@@ -256,7 +256,6 @@ function buildPlanCatalog(values, rawCatalogJson) {
 export function getConfig(env, request) {
   const requestUrl = new URL(request.url);
   const publicBaseOrigin = normalizeOrigin(readEnv(env, 'PUBLIC_BASE_URL'));
-  const origin = publicBaseOrigin || requestUrl.origin;
   const paymentsMode = parsePaymentsMode(readEnv(env, 'HB_PAYMENTS_MODE'));
   const stripePublishableKey = readModeScopedEnv(env, paymentsMode, {
     testKey: 'STRIPE_PUBLISHABLE_KEY_TEST',
@@ -393,11 +392,6 @@ export function getConfig(env, request) {
     oppGifterEmailFieldId: readEnv(env, 'GHL_CF_OPP_GIFTER_EMAIL'),
     oppWasGiftedFieldId: readEnv(env, 'GHL_CF_OPP_WAS_GIFTED'),
     oppGiftMessageFieldId: readEnv(env, 'GHL_CF_OPP_GIFT_MESSAGE'),
-
-    mainSuccessUrl: readEnv(env, 'MAIN_SUCCESS_URL') || `${origin}/thankyou.html?flow=main&session_id={CHECKOUT_SESSION_ID}`,
-    mainCancelUrl: readEnv(env, 'MAIN_CANCEL_URL') || `${origin}/maxsupport.html?checkout=cancelled`,
-    giftSuccessUrl: readEnv(env, 'GIFT_SUCCESS_URL') || `${origin}/thankyou.html?gift=true&session_id={CHECKOUT_SESSION_ID}`,
-    giftCancelUrl: readEnv(env, 'GIFT_CANCEL_URL') || `${origin}/giftahabitbuddy.html?checkout=cancelled`,
   };
 }
 
