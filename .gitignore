@@ -12,3 +12,9 @@ node_modules/
 
 # Logs
 *.log
+
+# Internal-only artifacts (do not commit)
+docs/
+audit-screenshots/
+audit-screenshots-*/
+/*.md
