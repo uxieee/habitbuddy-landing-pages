@@ -41,6 +41,7 @@ const DEFAULTS = {
 
   TRIAL_PERIOD_DAYS: '7',
   MAX_JSON_BODY_BYTES: '32768',
+  MAX_WEBHOOK_BODY_BYTES: '262144',
   RATE_LIMIT_WINDOW_SECONDS: '60',
   RATE_LIMIT_MAX_REQUESTS: '30',
   ALLOWED_ORIGINS: '',
@@ -58,6 +59,7 @@ const DEFAULTS = {
   GHL_CF_OPP_GIFTER_NAME: 'WShMHkb20MzhaRXcVKyU',
   GHL_CF_OPP_GIFTER_EMAIL: 'w4H8YyA4GiPOWVbcznXw',
   GHL_CF_OPP_WAS_GIFTED: 'cQJYSdGsL3icYf9tUbOZ',
+  GHL_CF_OPP_GIFT_MESSAGE: '',
 };
 
 function readEnv(env, key) {
@@ -297,6 +299,10 @@ export function getConfig(env, request) {
   });
   const trialPeriodDays = toPositiveInteger(readEnv(env, 'TRIAL_PERIOD_DAYS'), Number(DEFAULTS.TRIAL_PERIOD_DAYS));
   const maxJsonBodyBytes = toPositiveInteger(readEnv(env, 'MAX_JSON_BODY_BYTES'), Number(DEFAULTS.MAX_JSON_BODY_BYTES));
+  const maxWebhookBodyBytes = toPositiveInteger(
+    readEnv(env, 'MAX_WEBHOOK_BODY_BYTES'),
+    Number(DEFAULTS.MAX_WEBHOOK_BODY_BYTES),
+  );
   const rateLimitWindowSeconds = toPositiveInteger(
     readEnv(env, 'RATE_LIMIT_WINDOW_SECONDS'),
     Number(DEFAULTS.RATE_LIMIT_WINDOW_SECONDS),
@@ -344,6 +350,7 @@ export function getConfig(env, request) {
     turnstileEnforcement,
 
     maxJsonBodyBytes,
+    maxWebhookBodyBytes,
     rateLimitWindowSeconds,
     rateLimitMaxRequests,
     allowedOrigins,
@@ -384,6 +391,7 @@ export function getConfig(env, request) {
     oppGifterNameFieldId: readEnv(env, 'GHL_CF_OPP_GIFTER_NAME'),
     oppGifterEmailFieldId: readEnv(env, 'GHL_CF_OPP_GIFTER_EMAIL'),
     oppWasGiftedFieldId: readEnv(env, 'GHL_CF_OPP_WAS_GIFTED'),
+    oppGiftMessageFieldId: readEnv(env, 'GHL_CF_OPP_GIFT_MESSAGE'),
 
     mainSuccessUrl: readEnv(env, 'MAIN_SUCCESS_URL') || `${origin}/thankyou.html?flow=main&session_id={CHECKOUT_SESSION_ID}`,
     mainCancelUrl: readEnv(env, 'MAIN_CANCEL_URL') || `${origin}/maxsupport.html?checkout=cancelled`,

@@ -5,7 +5,10 @@ import { applyApiSecurity } from '../_lib/security.js';
 
 export async function onRequestPost(context) {
   try {
-    const securityError = await applyApiSecurity(context, { routeKey: '/api/main-subscribe' });
+    const securityError = await applyApiSecurity(context, {
+      routeKey: '/api/main-subscribe',
+      turnstileAction: 'main_subscribe',
+    });
     if (securityError) return securityError;
 
     const config = getConfig(context.env, context.request);

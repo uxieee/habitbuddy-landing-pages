@@ -6,15 +6,18 @@ Last updated: February 20, 2026
 
 API routes (under `functions/api/`):
 - `GET /api/health`
-- `POST /api/main-lead`
-- `POST /api/gift-lead`
-- `POST /api/main-checkout-session`
-- `POST /api/gift-checkout-session`
 - `POST /api/main-payment-element-init`
 - `POST /api/main-subscribe`
 - `POST /api/gift-payment-element-init`
 - `POST /api/gift-payment-complete`
 - `POST /api/stripe-webhook`
+- `GET /api/security-config`
+
+Retired routes (return `410 Gone`):
+- `POST /api/main-lead`
+- `POST /api/gift-lead`
+- `POST /api/main-checkout-session`
+- `POST /api/gift-checkout-session`
 
 Shared utilities:
 - `functions/_lib/config.js`
@@ -47,10 +50,14 @@ Frontend wiring:
 5. On successful payment:
    - upsert recipient contact
    - move existing gift opportunity from gifter contact to recipient contact via Associations API
+   - write gift message to GHL opportunity custom field (`GHL_CF_OPP_GIFT_MESSAGE`) if configured
    - move stage to:
      - 1-month -> `Max Support (Paying)`
      - 3-month -> `Three Month Pass`
      - 6-month -> `Six Month Pass`
+
+Privacy note:
+- Gift message is no longer stored in Stripe metadata; it is handled in GHL opportunity fields.
 
 ## Required env vars (payments mode toggle)
 
@@ -83,6 +90,11 @@ If 6-month gifting is enabled, set:
 Optional override only:
 - `GHL_STAGE_SIX_MONTH_PASS_ID`
   - If omitted, backend uses the built-in default stage ID from `functions/_lib/config.js`.
+- `GHL_CF_OPP_GIFT_MESSAGE`
+  - Set this to your new GoHighLevel opportunity custom field ID for gift message.
+
+Optional safety limit:
+- `MAX_WEBHOOK_BODY_BYTES` (default `262144`)
 
 Backwards compatibility:
 - If mode-specific variables are not set, the app falls back to legacy variables (`STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and legacy `STRIPE_*_PRICE_ID` values).

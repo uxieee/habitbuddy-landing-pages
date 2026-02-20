@@ -13,6 +13,41 @@ function parseEvent(rawBody) {
   }
 }
 
+function parseContentLength(request) {
+  const raw = request.headers.get('content-length');
+  if (!raw) return null;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return Math.floor(parsed);
+}
+
+async function readRawBodyWithLimit(request, maxBytes) {
+  const contentLength = parseContentLength(request);
+  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
+    const error = new Error('Stripe webhook payload is too large.');
+    error.status = 413;
+    throw error;
+  }
+
+  let rawBody = '';
+  try {
+    rawBody = await request.text();
+  } catch (_error) {
+    const error = new Error('Invalid Stripe webhook payload.');
+    error.status = 400;
+    throw error;
+  }
+
+  const bodySize = new TextEncoder().encode(rawBody).length;
+  if (bodySize > maxBytes) {
+    const error = new Error('Stripe webhook payload is too large.');
+    error.status = 413;
+    throw error;
+  }
+
+  return rawBody;
+}
+
 async function handleCheckoutEvent(env, event) {
   const session = event?.data?.object;
   if (!session || typeof session !== 'object') {
@@ -96,7 +131,7 @@ export async function onRequestPost(context) {
     assertConfig(config, ['stripeWebhookSecret', 'ghlPrivateToken', 'locationId', 'pipelineId']);
 
     const signature = context.request.headers.get('stripe-signature');
-    const rawBody = await context.request.text();
+    const rawBody = await readRawBodyWithLimit(context.request, config.maxWebhookBodyBytes);
 
     const isValid = await verifyStripeWebhookSignature(rawBody, signature, config.stripeWebhookSecret);
     if (!isValid) {

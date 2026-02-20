@@ -104,7 +104,11 @@ async function verifyTurnstileToken(secretKey, token, remoteIp) {
     }
 
     if (data.success === true) {
-      return { success: true };
+      return {
+        success: true,
+        hostname: String(data.hostname || '').trim().toLowerCase(),
+        action: String(data.action || '').trim(),
+      };
     }
 
     const errorCodes = Array.isArray(data['error-codes']) ? data['error-codes'] : [];
@@ -135,6 +139,30 @@ function normalizeTurnstileMode(value, fallback = 'off') {
     return normalized;
   }
   return fallback;
+}
+
+function normalizeTurnstileAction(value) {
+  return String(value || '').trim();
+}
+
+function getAllowedTurnstileHostnames(config, requestUrl) {
+  const hostnames = new Set();
+  if (requestUrl?.hostname) {
+    hostnames.add(String(requestUrl.hostname).toLowerCase());
+  }
+
+  const allowedOrigins = Array.isArray(config?.allowedOrigins) ? config.allowedOrigins : [];
+  allowedOrigins.forEach((origin) => {
+    const normalized = normalizeOrigin(origin);
+    if (!normalized) return;
+    try {
+      hostnames.add(new URL(normalized).hostname.toLowerCase());
+    } catch (_error) {
+      // Ignore malformed origins from configuration.
+    }
+  });
+
+  return [...hostnames];
 }
 
 export async function applyApiSecurity(context, options = {}) {
@@ -187,6 +215,7 @@ export async function applyApiSecurity(context, options = {}) {
     options.turnstileMode !== undefined ? options.turnstileMode : config.turnstileEnforcement,
     'off',
   );
+  const expectedTurnstileAction = normalizeTurnstileAction(options.turnstileAction);
 
   if (turnstileMode !== 'off') {
     const token = getTurnstileToken(request);
@@ -206,6 +235,22 @@ export async function applyApiSecurity(context, options = {}) {
     const verification = await verifyTurnstileToken(config.turnstileSecretKey, token, clientIp);
     if (!verification.success) {
       return errorResponse(400, 'Human verification failed. Please try again.');
+    }
+
+    const expectedHostnames = getAllowedTurnstileHostnames(config, requestUrl);
+    const verifiedHostname = String(verification.hostname || '').trim().toLowerCase();
+    if (
+      expectedHostnames.length > 0 &&
+      (!verifiedHostname || !expectedHostnames.includes(verifiedHostname))
+    ) {
+      return errorResponse(400, 'Human verification failed. Please try again.');
+    }
+
+    if (expectedTurnstileAction) {
+      const verifiedAction = normalizeTurnstileAction(verification.action);
+      if (!verifiedAction || verifiedAction !== expectedTurnstileAction) {
+        return errorResponse(400, 'Human verification failed. Please try again.');
+      }
     }
   }
 

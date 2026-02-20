@@ -1,6 +1,6 @@
 # Security Hardening Runbook
 
-Last updated: 2026-02-19
+Last updated: 2026-02-20
 Repository: `habitbuddy-landing-pages`
 
 This document explains:
@@ -34,15 +34,12 @@ Guard adds:
 - Optional requirement for `Origin` header
 - In-memory per-IP, per-route rate limiting
 - Cloudflare Turnstile verification (off/optional/required)
+- Turnstile hostname binding and per-endpoint action binding
 
 Applied to write endpoints:
-- `functions/api/main-lead.js`
 - `functions/api/main-payment-element-init.js`
-- `functions/api/main-checkout-session.js`
 - `functions/api/main-subscribe.js`
-- `functions/api/gift-lead.js`
 - `functions/api/gift-payment-element-init.js`
-- `functions/api/gift-checkout-session.js`
 - `functions/api/gift-payment-complete.js`
 
 Why:
@@ -51,6 +48,7 @@ Why:
 Effect on website:
 - Legit browser users continue to work normally.
 - Requests from disallowed origins, missing/invalid human verification, or over limit return 4xx.
+- Tokens replayed with wrong Turnstile `action`/hostname are rejected.
 
 ---
 
@@ -58,10 +56,13 @@ Effect on website:
 
 Updated:
 - `functions/_lib/http.js`
+- `functions/api/stripe-webhook.js`
+- `functions/_lib/config.js`
 
 Changes:
 - Enforces `Content-Type: application/json` for JSON endpoints
 - Enforces request body size limit
+- Enforces Stripe webhook raw body size limit via `MAX_WEBHOOK_BODY_BYTES`
 - Rejects invalid/non-object JSON cleanly
 - Adds no-store and nosniff style response hardening headers for JSON responses
 - Stops returning upstream provider internals to public clients by default
@@ -189,6 +190,44 @@ Effect on website:
 
 ---
 
+### I) Data minimization for gift message
+
+Updated:
+- `functions/_lib/habitbuddy.js`
+- `giftahabitbuddy.html`
+
+Changes:
+- Removed gift message from Stripe metadata payloads
+- Writes gift message into GHL opportunity custom field (`GHL_CF_OPP_GIFT_MESSAGE`)
+- Added frontend message length cap to match backend validation
+
+Why:
+- Avoids storing non-payment content in Stripe metadata and prevents metadata length failures.
+
+Effect on website:
+- Gift message still reaches GHL opportunity records, but is no longer sent to Stripe.
+
+---
+
+### J) Legacy endpoint retirement
+
+Updated:
+- `functions/api/main-lead.js`
+- `functions/api/gift-lead.js`
+- `functions/api/main-checkout-session.js`
+- `functions/api/gift-checkout-session.js`
+
+Changes:
+- Legacy write endpoints now return `410 Gone`.
+
+Why:
+- Reduces attack surface by removing unused public mutation paths.
+
+Effect on website:
+- No impact on current checkout UX (Payment Element routes remain active).
+
+---
+
 ## 3) Required Cloudflare setup (you must do this)
 
 ### Step 1: Turnstile
@@ -214,9 +253,11 @@ Required for this hardening to be active:
 - `ALLOWED_ORIGINS=https://tryhabitbuddy.com,https://<your-project>.pages.dev`
 - `REQUIRE_ORIGIN_HEADER=true`
 - `MAX_JSON_BODY_BYTES=32768`
+- `MAX_WEBHOOK_BODY_BYTES=262144`
 - `RATE_LIMIT_WINDOW_SECONDS=60`
 - `RATE_LIMIT_MAX_REQUESTS=30`
 - `HEALTH_STATUS_KEY=<random-long-secret>`
+- `GHL_CF_OPP_GIFT_MESSAGE=<your-opportunity-custom-field-id>`
 
 Also keep existing production vars set:
 - Stripe keys and webhook secret
@@ -276,4 +317,3 @@ Expected business behavior now:
 
 Security hardening implementation commit:
 - `349ebe1`
-

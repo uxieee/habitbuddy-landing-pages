@@ -5,7 +5,10 @@ import { applyApiSecurity } from '../_lib/security.js';
 
 export async function onRequestPost(context) {
   try {
-    const securityError = await applyApiSecurity(context, { routeKey: '/api/main-payment-element-init' });
+    const securityError = await applyApiSecurity(context, {
+      routeKey: '/api/main-payment-element-init',
+      turnstileAction: 'main_payment_init',
+    });
     if (securityError) return securityError;
 
     const config = getConfig(context.env, context.request);

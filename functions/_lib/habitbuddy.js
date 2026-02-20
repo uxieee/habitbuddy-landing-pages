@@ -201,6 +201,7 @@ function listOpportunityCustomFields(config, fields) {
     { id: config.oppGifterNameFieldId, value: fields.gifterName },
     { id: config.oppGifterEmailFieldId, value: fields.gifterEmail },
     { id: config.oppWasGiftedFieldId, value: fields.wasGifted },
+    { id: config.oppGiftMessageFieldId, value: fields.giftMessage },
   ];
   return mapped.filter((item) => item.id && item.value !== undefined && item.value !== null && item.value !== '');
 }
@@ -438,6 +439,7 @@ export async function captureGiftLead(env, payload) {
       gifterName: lead.senderName,
       gifterEmail: lead.senderEmail,
       wasGifted: 'No',
+      giftMessage: lead.message,
     }),
   });
 
@@ -482,7 +484,6 @@ function buildGiftFlowMetadata(config, captured, lead, plan) {
     recipientName: lead.recipientName,
     recipientPhone: lead.recipientPhone,
     recipientEmail: lead.recipientEmail,
-    giftMessage: lead.message,
   };
 }
 
@@ -871,7 +872,9 @@ export async function finalizeGiftPaymentIntent(env, request, payload) {
     throw error;
   }
 
-  const result = await processGiftCheckoutCompleted(env, paymentIntentToSessionLike(paymentIntent));
+  const giftMessage = enforceMaxLength(cleanText(payload.giftMessage || payload.gift_message), 600, 'Gift message');
+  const metadataOverrides = giftMessage ? { giftMessage, gift_message: giftMessage } : {};
+  const result = await processGiftCheckoutCompleted(env, paymentIntentToSessionLike(paymentIntent, metadataOverrides));
   return {
     paymentIntentId,
     status,
@@ -957,6 +960,22 @@ function getOpportunityContactId(opportunity) {
       opportunity?.contact?.id ||
       opportunity?.contact?.contactId,
   );
+}
+
+function getOpportunityCustomFieldValue(opportunity, fieldId) {
+  const normalizedFieldId = cleanText(fieldId);
+  if (!normalizedFieldId) return '';
+
+  const customFields = Array.isArray(opportunity?.customFields)
+    ? opportunity.customFields
+    : Array.isArray(opportunity?.custom_fields)
+      ? opportunity.custom_fields
+      : [];
+  const match = customFields.find(
+    (item) => cleanText(item?.id || item?.fieldId || item?.customFieldId) === normalizedFieldId,
+  );
+
+  return cleanText(match?.value ?? match?.fieldValue ?? match?.field_value);
 }
 
 export async function processMainCheckoutCompleted(env, session) {
@@ -1082,6 +1101,8 @@ export async function processGiftCheckoutCompleted(env, session) {
       opportunity = null;
     }
   }
+  const metadataGiftMessage = cleanText(metadata.giftMessage || metadata.gift_message);
+  const giftMessage = metadataGiftMessage || getOpportunityCustomFieldValue(opportunity, config.oppGiftMessageFieldId);
 
   const giftOpportunityPayload = {
     pipelineId: config.pipelineId,
@@ -1097,6 +1118,7 @@ export async function processGiftCheckoutCompleted(env, session) {
       gifterName: senderName,
       gifterEmail: senderEmail,
       wasGifted: 'Yes',
+      giftMessage,
     }),
   };
 
