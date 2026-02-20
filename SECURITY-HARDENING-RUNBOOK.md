@@ -263,6 +263,7 @@ Required for this hardening to be active:
 
 Also keep existing production vars set:
 - Stripe keys and webhook secret
+- Stripe price IDs, including 6-month gift price IDs (`STRIPE_GIFT_6M_PRICE_ID_TEST` and `STRIPE_GIFT_6M_PRICE_ID_LIVE`)
 - GHL token and IDs
 
 ### Step 3: Deploy

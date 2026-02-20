@@ -85,7 +85,7 @@ Live-mode Stripe vars:
 
 The backend now fails fast if Stripe price IDs are missing, so these must be explicitly configured.
 
-If 6-month gifting is enabled, set:
+6-month gifting is live. Set:
 - `STRIPE_GIFT_6M_PRICE_ID_TEST`
 - `STRIPE_GIFT_6M_PRICE_ID_LIVE`
 

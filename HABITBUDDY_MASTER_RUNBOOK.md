@@ -40,6 +40,7 @@ If you only do one thing, do Section 5 carefully. Most runtime failures come fro
 ### Payment architecture
 - Main flow uses Stripe Payment Element + SetupIntent + server-side subscription creation.
 - Gift flow uses Stripe Payment Element + PaymentIntent + server-side completion sync.
+- 6-month gift plan is live and should be configured in both test/live env vars.
 - Legacy hosted Checkout Session routes are retired.
 
 ### Gift message handling (important)
@@ -94,9 +95,11 @@ Use `.dev.vars.example` as template.
 - `STRIPE_MAIN_TRIAL_PRICE_ID_TEST`
 - `STRIPE_GIFT_1M_PRICE_ID_TEST`
 - `STRIPE_GIFT_3M_PRICE_ID_TEST`
+- `STRIPE_GIFT_6M_PRICE_ID_TEST`
 - `STRIPE_MAIN_TRIAL_PRICE_ID_LIVE`
 - `STRIPE_GIFT_1M_PRICE_ID_LIVE`
 - `STRIPE_GIFT_3M_PRICE_ID_LIVE`
+- `STRIPE_GIFT_6M_PRICE_ID_LIVE`
 
 ### Required for security hardening
 - `TURNSTILE_SITE_KEY`
@@ -111,7 +114,6 @@ Use `.dev.vars.example` as template.
 - `HEALTH_STATUS_KEY=<long random secret>`
 
 ### Optional / conditional
-- `STRIPE_GIFT_6M_PRICE_ID_TEST` and `STRIPE_GIFT_6M_PRICE_ID_LIVE` (if 6-month gift enabled)
 - `GHL_STAGE_SIX_MONTH_PASS_ID` (override only; default exists in code)
 - `GHL_GIFT_CONTACT_ASSOCIATION_KEY` (if you want explicit contact-to-contact gifter/recipient link)
 - `GHL_CF_OPP_GIFT_MESSAGE` (recommended explicit override; fallback default in code is `QlQy70D3GiL6vTyjj2ma`)
