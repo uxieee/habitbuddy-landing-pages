@@ -13,7 +13,7 @@ This is the single source of truth for:
 ## 1) What You Need To Do Right Now
 
 1. In Cloudflare Pages, set all required env vars (Section 5).
-2. Set `GHL_CF_OPP_GIFT_MESSAGE` to your GoHighLevel opportunity custom field ID for "Gift Message".
+2. Set `GHL_CF_OPP_GIFT_MESSAGE` to your GoHighLevel opportunity custom field ID for "Gift Message" (`QlQy70D3GiL6vTyjj2ma` for location `3ouY0YkB0fLDFs5nb8UG`).
 3. Configure Stripe webhook events and secret for the same mode as `HB_PAYMENTS_MODE` (Section 7).
 4. Deploy.
 5. Run the post-deploy checklist (Section 10).
@@ -97,7 +97,7 @@ Use `.dev.vars.example` as template.
 - `STRIPE_MAIN_TRIAL_PRICE_ID_LIVE`
 - `STRIPE_GIFT_1M_PRICE_ID_LIVE`
 - `STRIPE_GIFT_3M_PRICE_ID_LIVE`
-- `GHL_CF_OPP_GIFT_MESSAGE` (new GHL opportunity custom field ID for gift message)
+- `GHL_CF_OPP_GIFT_MESSAGE` (new GHL opportunity custom field ID for gift message; current value: `QlQy70D3GiL6vTyjj2ma`)
 
 ### Required for security hardening
 - `TURNSTILE_SITE_KEY`
@@ -157,7 +157,7 @@ Critical: `HB_PAYMENTS_MODE` and webhook secret mode must match.
 1. Confirm pipeline and stage IDs are correct (or use defaults).
 2. Create opportunity custom field: `Gift Message` (if not already created).
 3. Copy that custom field ID into:
-- `GHL_CF_OPP_GIFT_MESSAGE`
+- `GHL_CF_OPP_GIFT_MESSAGE` (`QlQy70D3GiL6vTyjj2ma` for your current location)
 4. Keep existing opportunity/contact custom field IDs configured if you use overrides.
 
 ## 9) Deployment Procedure
