@@ -1,24 +1,47 @@
-# HabitBuddy Landing Pages
+# Habit Buddy Website
 
-Static marketing pages and Cloudflare Pages Functions for HabitBuddy.
+This repository contains the production website for Habit Buddy: a text-message-based habit coaching service.
 
-## Runtime Files
+## What The Website Includes
 
-- HTML pages: `index.html`, `maxsupport.html`, `giftahabitbuddy.html`, `thankyou.html`, `privacy.html`, `terms.html`
-- Edge/API code: `functions/`
-- Cloudflare config: `_headers`, `_redirects`
+- Landing page (`index.html`)
+  - Brand story, features, FAQ, and CTAs into checkout
+  - Main offer messaging: free 7-day trial for Max Support
+- Main checkout page (`maxsupport.html`)
+  - Collects customer info and preferred text time
+  - Starts payment setup flow for the subscription
+- Gift checkout page (`giftahabitbuddy.html`)
+  - One-time gift purchase options:
+    - 1 month: `$29.99`
+    - 3 months: `$79.99`
+    - 6 months: `$139.99`
+  - Optional gift message support
+- Post-purchase/activation page (`thankyou.html`)
+- Legal pages (`privacy.html`, `terms.html`)
 
-## Local Development
+## Backend/API (Cloudflare Pages Functions)
 
-1. Install Wrangler.
-2. Set local secrets in `.dev.vars` (never commit this file).
-3. Run Cloudflare Pages local dev for this project.
+API logic is implemented in `functions/` and serves the website checkout flows.
 
-## Deployment
+Key endpoints used by the frontend:
 
-Deploy via Cloudflare Pages using the repository branch/environment settings.
+- `POST /api/security-config`
+- `POST /api/main-payment-element-init`
+- `POST /api/main-subscribe`
+- `POST /api/gift-payment-element-init`
+- `POST /api/gift-payment-complete`
+- `POST /api/stripe-webhook`
 
-## Repository Policy
+Supporting shared logic lives in `functions/_lib/` (Stripe, security, GoHighLevel, config, HTTP helpers).
 
-This repo is runtime-only.
-Internal documents, audit artifacts, and screenshots are intentionally excluded.
+## Deployment Target
+
+- Cloudflare Pages (static HTML + Pages Functions)
+- Runtime config is injected through Cloudflare environment variables
+
+## Repository Scope
+
+This repo is intentionally runtime-only:
+
+- Includes only website/app files required for serving pages and API flows
+- Excludes internal documents, audits, reports, and screenshots
