@@ -244,7 +244,7 @@ Check:
 - Gift checkout page: `giftahabitbuddy.html`
 - Security runbook: `SECURITY-HARDENING-RUNBOOK.md`
 - Backend setup notes: `HABITBUDDY_BACKEND_SETUP.md`
-- API contract: `docs/openapi.yaml`
+- API contract: `../openapi.yaml`
 
 ## 14) Document Status
 

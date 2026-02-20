@@ -16,7 +16,7 @@ This document explains:
 
 ## 1) Where the security documents live
 
-- Security findings report: `security_best_practices_report.md`
+- Security findings report: `../reports/security_best_practices_report.md`
 - This implementation runbook: `SECURITY-HARDENING-RUNBOOK.md`
 
 The findings report is the "what risks were found" document.
