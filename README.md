@@ -1,47 +1,35 @@
-# Habit Buddy Website
+# Habit Buddy
 
-This repository contains the production website for Habit Buddy: a text-message-based habit coaching service.
+**Habit Buddy is the daily text that helps you build habits that actually stick.**
 
-## What The Website Includes
+Instead of another app you forget to open, Habit Buddy lives right where you already are: your SMS inbox. You choose a habit, pick a time, and get a simple daily check-in. Reply in seconds, stay consistent, and build momentum—one day at a time.
 
-- Landing page (`index.html`)
-  - Brand story, features, FAQ, and CTAs into checkout
-  - Main offer messaging: free 7-day trial for Max Support
-- Main checkout page (`maxsupport.html`)
-  - Collects customer info and preferred text time
-  - Starts payment setup flow for the subscription
-- Gift checkout page (`giftahabitbuddy.html`)
-  - One-time gift purchase options:
-    - 1 month: `$29.99`
-    - 3 months: `$79.99`
-    - 6 months: `$139.99`
-  - Optional gift message support
-- Post-purchase/activation page (`thankyou.html`)
-- Legal pages (`privacy.html`, `terms.html`)
+## What Habit Buddy does
+- **Daily text check-ins** that keep you accountable without feeling overwhelming  
+- **Streak tracking** so you can see your progress and stay motivated  
+- **Milestone celebrations** to make small wins feel real  
+- **Extra support on hard days** when motivation drops  
+- **Friendly, low-pressure coaching** right inside a normal text conversation  
 
-## Backend/API (Cloudflare Pages Functions)
+## Who it’s for
+Habit Buddy is for anyone who:
+- wants consistency but doesn’t want another app
+- struggles with motivation, reminders, or follow-through
+- likes quick, simple accountability (replying to a text takes 5 seconds)
 
-API logic is implemented in `functions/` and serves the website checkout flows.
+## How it works
+1. **Sign up** and choose what habit you want to build  
+2. **Get a daily text** at the time you prefer  
+3. **Reply** to check in and keep your streak alive  
+4. **Build momentum** with small wins, reminders, and encouragement  
 
-Key endpoints used by the frontend:
+## Pricing
+- **7-day free trial** (card required)  
+- **Cancel anytime**  
 
-- `POST /api/security-config`
-- `POST /api/main-payment-element-init`
-- `POST /api/main-subscribe`
-- `POST /api/gift-payment-element-init`
-- `POST /api/gift-payment-complete`
-- `POST /api/stripe-webhook`
+## Gift Habit Buddy
+You can also gift Habit Buddy to someone you care about with **1, 3, or 6-month passes**—a practical gift that supports real change.
 
-Supporting shared logic lives in `functions/_lib/` (Stripe, security, GoHighLevel, config, HTTP helpers).
+---
 
-## Deployment Target
-
-- Cloudflare Pages (static HTML + Pages Functions)
-- Runtime config is injected through Cloudflare environment variables
-
-## Repository Scope
-
-This repo is intentionally runtime-only:
-
-- Includes only website/app files required for serving pages and API flows
-- Excludes internal documents, audits, reports, and screenshots
+Habit Buddy makes habit-building simple: **no dashboards, no complicated systems—just a daily text that keeps you on track.**
