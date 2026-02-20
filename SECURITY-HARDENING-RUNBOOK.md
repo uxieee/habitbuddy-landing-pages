@@ -3,6 +3,8 @@
 Last updated: 2026-02-20
 Repository: `habitbuddy-landing-pages`
 
+> For the unified history + setup + operations guide, use `HABITBUDDY_MASTER_RUNBOOK.md`.
+
 This document explains:
 - What security changes were made
 - Why they were made

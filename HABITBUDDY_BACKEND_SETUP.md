@@ -2,6 +2,8 @@
 
 Last updated: February 20, 2026
 
+> For the unified history + setup + operations guide, use `HABITBUDDY_MASTER_RUNBOOK.md`.
+
 ## What was added
 
 API routes (under `functions/api/`):
