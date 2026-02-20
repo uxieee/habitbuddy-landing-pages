@@ -1,6 +1,6 @@
 # HabitBuddy Backend Bridge (Cloudflare Pages Functions)
 
-Last updated: February 19, 2026
+Last updated: February 20, 2026
 
 ## What was added
 
@@ -52,27 +52,53 @@ Frontend wiring:
      - 3-month -> `Three Month Pass`
      - 6-month -> `Six Month Pass`
 
-## Required env vars (baseline mode)
+## Required env vars (payments mode toggle)
 
 Copy `.dev.vars.example` and set:
 - `GHL_PRIVATE_TOKEN`
-- `STRIPE_PUBLISHABLE_KEY`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_MAIN_TRIAL_PRICE_ID`
-- `STRIPE_GIFT_1M_PRICE_ID`
-- `STRIPE_GIFT_3M_PRICE_ID`
+- `HB_PAYMENTS_MODE` (`test` or `live`)
+
+Test-mode Stripe vars:
+- `STRIPE_PUBLISHABLE_KEY_TEST`
+- `STRIPE_SECRET_KEY_TEST`
+- `STRIPE_WEBHOOK_SECRET_TEST`
+- `STRIPE_MAIN_TRIAL_PRICE_ID_TEST`
+- `STRIPE_GIFT_1M_PRICE_ID_TEST`
+- `STRIPE_GIFT_3M_PRICE_ID_TEST`
+
+Live-mode Stripe vars:
+- `STRIPE_PUBLISHABLE_KEY_LIVE`
+- `STRIPE_SECRET_KEY_LIVE`
+- `STRIPE_WEBHOOK_SECRET_LIVE`
+- `STRIPE_MAIN_TRIAL_PRICE_ID_LIVE`
+- `STRIPE_GIFT_1M_PRICE_ID_LIVE`
+- `STRIPE_GIFT_3M_PRICE_ID_LIVE`
 
 The backend now fails fast if Stripe price IDs are missing, so these must be explicitly configured.
 
 If 6-month gifting is enabled, also set:
-- `STRIPE_GIFT_6M_PRICE_ID`
+- `STRIPE_GIFT_6M_PRICE_ID_TEST`
+- `STRIPE_GIFT_6M_PRICE_ID_LIVE`
 - `GHL_STAGE_SIX_MONTH_PASS_ID`
+
+Backwards compatibility:
+- If mode-specific variables are not set, the app falls back to legacy variables (`STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and legacy `STRIPE_*_PRICE_ID` values).
+- If `HB_PAYMENTS_MODE` is set, key format is validated (`pk_test_/sk_test_` for test mode and `pk_live_/sk_live_` for live mode).
+
+### Switching from test to live
+
+1. Fill all `*_LIVE` Stripe keys and live price IDs in Cloudflare Pages variables.
+2. Change only `HB_PAYMENTS_MODE` from `test` to `live`.
+3. Deploy.
+4. Verify `GET /api/health` returns `"paymentsMode":"live"`.
+
+Rollback is the reverse: set `HB_PAYMENTS_MODE=test` and redeploy.
 
 ## Plan catalog mode (recommended for future changes)
 
-You can keep baseline mode, or switch to catalog mode by setting:
-- `HB_PLAN_CATALOG_JSON`
+You can keep price-ID mode, or switch to catalog mode by setting one of:
+- `HB_PLAN_CATALOG_JSON_TEST` and `HB_PLAN_CATALOG_JSON_LIVE` (recommended with mode toggle), or
+- `HB_PLAN_CATALOG_JSON` (legacy/global fallback)
 
 When present, this JSON drives plan behavior (price ID, stage ID, amount, aliases) without code edits.
 

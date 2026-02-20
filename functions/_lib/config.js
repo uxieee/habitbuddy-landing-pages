@@ -1,7 +1,14 @@
 const DEFAULTS = {
   GHL_API_BASE: 'https://services.leadconnectorhq.com',
   STRIPE_API_BASE: 'https://api.stripe.com/v1',
+  HB_PAYMENTS_MODE: '',
   STRIPE_PUBLISHABLE_KEY: '',
+  STRIPE_PUBLISHABLE_KEY_TEST: '',
+  STRIPE_PUBLISHABLE_KEY_LIVE: '',
+  STRIPE_SECRET_KEY_TEST: '',
+  STRIPE_SECRET_KEY_LIVE: '',
+  STRIPE_WEBHOOK_SECRET_TEST: '',
+  STRIPE_WEBHOOK_SECRET_LIVE: '',
   TURNSTILE_SITE_KEY: '',
   TURNSTILE_SECRET_KEY: '',
   TURNSTILE_ENFORCEMENT: '',
@@ -17,10 +24,20 @@ const DEFAULTS = {
   GHL_STAGE_SIX_MONTH_PASS_ID: 'a637ae2a-2ac4-4657-863e-576d3d0ea727',
 
   STRIPE_MAIN_TRIAL_PRICE_ID: '',
+  STRIPE_MAIN_TRIAL_PRICE_ID_TEST: '',
+  STRIPE_MAIN_TRIAL_PRICE_ID_LIVE: '',
   STRIPE_GIFT_1M_PRICE_ID: '',
+  STRIPE_GIFT_1M_PRICE_ID_TEST: '',
+  STRIPE_GIFT_1M_PRICE_ID_LIVE: '',
   STRIPE_GIFT_3M_PRICE_ID: '',
+  STRIPE_GIFT_3M_PRICE_ID_TEST: '',
+  STRIPE_GIFT_3M_PRICE_ID_LIVE: '',
   STRIPE_GIFT_6M_PRICE_ID: '',
+  STRIPE_GIFT_6M_PRICE_ID_TEST: '',
+  STRIPE_GIFT_6M_PRICE_ID_LIVE: '',
   HB_PLAN_CATALOG_JSON: '',
+  HB_PLAN_CATALOG_JSON_TEST: '',
+  HB_PLAN_CATALOG_JSON_LIVE: '',
 
   TRIAL_PERIOD_DAYS: '7',
   MAX_JSON_BODY_BYTES: '32768',
@@ -98,6 +115,27 @@ function parseCsvOrigins(value) {
 
 function uniqueStrings(values = []) {
   return [...new Set((values || []).filter(Boolean))];
+}
+
+function parsePaymentsMode(value) {
+  const raw = cleanText(value).toLowerCase();
+  if (!raw) return 'legacy';
+  if (raw === 'test' || raw === 'live') return raw;
+
+  const error = new Error('HB_PAYMENTS_MODE must be either "test" or "live".');
+  error.status = 500;
+  throw error;
+}
+
+function readModeScopedEnv(env, paymentsMode, keys) {
+  const fallbackValue = readEnv(env, keys.fallbackKey);
+  if (paymentsMode === 'test') {
+    return readEnv(env, keys.testKey) || fallbackValue;
+  }
+  if (paymentsMode === 'live') {
+    return readEnv(env, keys.liveKey) || fallbackValue;
+  }
+  return fallbackValue;
 }
 
 function normalizeAliases(key, aliases = []) {
@@ -216,6 +254,47 @@ export function getConfig(env, request) {
   const requestUrl = new URL(request.url);
   const publicBaseOrigin = normalizeOrigin(readEnv(env, 'PUBLIC_BASE_URL'));
   const origin = publicBaseOrigin || requestUrl.origin;
+  const paymentsMode = parsePaymentsMode(readEnv(env, 'HB_PAYMENTS_MODE'));
+  const stripePublishableKey = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_PUBLISHABLE_KEY_TEST',
+    liveKey: 'STRIPE_PUBLISHABLE_KEY_LIVE',
+    fallbackKey: 'STRIPE_PUBLISHABLE_KEY',
+  });
+  const stripeSecretKey = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_SECRET_KEY_TEST',
+    liveKey: 'STRIPE_SECRET_KEY_LIVE',
+    fallbackKey: 'STRIPE_SECRET_KEY',
+  });
+  const stripeWebhookSecret = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_WEBHOOK_SECRET_TEST',
+    liveKey: 'STRIPE_WEBHOOK_SECRET_LIVE',
+    fallbackKey: 'STRIPE_WEBHOOK_SECRET',
+  });
+  const stripeMainTrialPriceId = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_MAIN_TRIAL_PRICE_ID_TEST',
+    liveKey: 'STRIPE_MAIN_TRIAL_PRICE_ID_LIVE',
+    fallbackKey: 'STRIPE_MAIN_TRIAL_PRICE_ID',
+  });
+  const stripeGift1mPriceId = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_GIFT_1M_PRICE_ID_TEST',
+    liveKey: 'STRIPE_GIFT_1M_PRICE_ID_LIVE',
+    fallbackKey: 'STRIPE_GIFT_1M_PRICE_ID',
+  });
+  const stripeGift3mPriceId = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_GIFT_3M_PRICE_ID_TEST',
+    liveKey: 'STRIPE_GIFT_3M_PRICE_ID_LIVE',
+    fallbackKey: 'STRIPE_GIFT_3M_PRICE_ID',
+  });
+  const stripeGift6mPriceId = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'STRIPE_GIFT_6M_PRICE_ID_TEST',
+    liveKey: 'STRIPE_GIFT_6M_PRICE_ID_LIVE',
+    fallbackKey: 'STRIPE_GIFT_6M_PRICE_ID',
+  });
+  const planCatalogJson = readModeScopedEnv(env, paymentsMode, {
+    testKey: 'HB_PLAN_CATALOG_JSON_TEST',
+    liveKey: 'HB_PLAN_CATALOG_JSON_LIVE',
+    fallbackKey: 'HB_PLAN_CATALOG_JSON',
+  });
   const trialPeriodDays = toPositiveInteger(readEnv(env, 'TRIAL_PERIOD_DAYS'), Number(DEFAULTS.TRIAL_PERIOD_DAYS));
   const maxJsonBodyBytes = toPositiveInteger(readEnv(env, 'MAX_JSON_BODY_BYTES'), Number(DEFAULTS.MAX_JSON_BODY_BYTES));
   const rateLimitWindowSeconds = toPositiveInteger(
@@ -242,10 +321,10 @@ export function getConfig(env, request) {
     : defaultTurnstileEnforcement;
 
   const baseValues = {
-    stripeMainTrialPriceId: readEnv(env, 'STRIPE_MAIN_TRIAL_PRICE_ID'),
-    stripeGift1mPriceId: readEnv(env, 'STRIPE_GIFT_1M_PRICE_ID'),
-    stripeGift3mPriceId: readEnv(env, 'STRIPE_GIFT_3M_PRICE_ID'),
-    stripeGift6mPriceId: readEnv(env, 'STRIPE_GIFT_6M_PRICE_ID'),
+    stripeMainTrialPriceId,
+    stripeGift1mPriceId,
+    stripeGift3mPriceId,
+    stripeGift6mPriceId,
     stageMaxSupportTrialId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_TRIAL_ID'),
     stageMaxSupportPayingId: readEnv(env, 'GHL_STAGE_MAX_SUPPORT_PAYING_ID'),
     stageThreeMonthPassId: readEnv(env, 'GHL_STAGE_THREE_MONTH_PASS_ID'),
@@ -253,12 +332,13 @@ export function getConfig(env, request) {
     trialPeriodDays,
   };
 
-  const planCatalog = buildPlanCatalog(baseValues, readEnv(env, 'HB_PLAN_CATALOG_JSON'));
+  const planCatalog = buildPlanCatalog(baseValues, planCatalogJson);
 
   return {
     ghlApiBase: readEnv(env, 'GHL_API_BASE'),
     stripeApiBase: readEnv(env, 'STRIPE_API_BASE'),
-    stripePublishableKey: readEnv(env, 'STRIPE_PUBLISHABLE_KEY'),
+    paymentsMode,
+    stripePublishableKey,
     turnstileSiteKey,
     turnstileSecretKey,
     turnstileEnforcement,
@@ -270,8 +350,8 @@ export function getConfig(env, request) {
     requireOriginHeader,
     healthStatusKey: readEnv(env, 'HEALTH_STATUS_KEY'),
     ghlPrivateToken: readEnv(env, 'GHL_PRIVATE_TOKEN'),
-    stripeSecretKey: readEnv(env, 'STRIPE_SECRET_KEY'),
-    stripeWebhookSecret: readEnv(env, 'STRIPE_WEBHOOK_SECRET'),
+    stripeSecretKey,
+    stripeWebhookSecret,
 
     locationId: readEnv(env, 'GHL_LOCATION_ID'),
     pipelineId: readEnv(env, 'GHL_PIPELINE_ID'),
@@ -283,10 +363,10 @@ export function getConfig(env, request) {
     stageThreeMonthPassId: readEnv(env, 'GHL_STAGE_THREE_MONTH_PASS_ID'),
     stageSixMonthPassId: readEnv(env, 'GHL_STAGE_SIX_MONTH_PASS_ID'),
 
-    stripeMainTrialPriceId: readEnv(env, 'STRIPE_MAIN_TRIAL_PRICE_ID'),
-    stripeGift1mPriceId: readEnv(env, 'STRIPE_GIFT_1M_PRICE_ID'),
-    stripeGift3mPriceId: readEnv(env, 'STRIPE_GIFT_3M_PRICE_ID'),
-    stripeGift6mPriceId: readEnv(env, 'STRIPE_GIFT_6M_PRICE_ID'),
+    stripeMainTrialPriceId,
+    stripeGift1mPriceId,
+    stripeGift3mPriceId,
+    stripeGift6mPriceId,
 
     trialPeriodDays,
     planCatalog,
@@ -312,6 +392,34 @@ export function getConfig(env, request) {
   };
 }
 
+function keyMatchesExpectedPrefix(keyValue, prefixes) {
+  if (!keyValue) return true;
+  return prefixes.some((prefix) => keyValue.startsWith(prefix));
+}
+
+function assertStripeModeConfig(config, keys = []) {
+  const mode = cleanText(config?.paymentsMode).toLowerCase();
+  if (mode !== 'test' && mode !== 'live') return;
+
+  if (keys.includes('stripePublishableKey')) {
+    const expectedPrefixes = mode === 'live' ? ['pk_live_'] : ['pk_test_'];
+    if (!keyMatchesExpectedPrefix(config.stripePublishableKey, expectedPrefixes)) {
+      const error = new Error(`HB_PAYMENTS_MODE=${mode} requires STRIPE_PUBLISHABLE_KEY to use a ${expectedPrefixes.join('/')} key.`);
+      error.status = 500;
+      throw error;
+    }
+  }
+
+  if (keys.includes('stripeSecretKey')) {
+    const expectedPrefixes = mode === 'live' ? ['sk_live_', 'rk_live_'] : ['sk_test_', 'rk_test_'];
+    if (!keyMatchesExpectedPrefix(config.stripeSecretKey, expectedPrefixes)) {
+      const error = new Error(`HB_PAYMENTS_MODE=${mode} requires STRIPE_SECRET_KEY to use a ${expectedPrefixes.join('/')} key.`);
+      error.status = 500;
+      throw error;
+    }
+  }
+}
+
 export function assertConfig(config, keys) {
   const missing = keys.filter((key) => !config[key]);
   if (missing.length > 0) {
@@ -319,6 +427,7 @@ export function assertConfig(config, keys) {
     error.status = 500;
     throw error;
   }
+  assertStripeModeConfig(config, keys);
 }
 
 export function buildOpportunityName(primaryName, secondaryName) {

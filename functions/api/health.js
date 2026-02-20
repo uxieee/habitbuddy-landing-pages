@@ -9,6 +9,7 @@ export async function onRequestGet(context) {
   return jsonResponse({
     success: true,
     service: 'habitbuddy-bridge',
+    paymentsMode: config.paymentsMode,
     timestamp: new Date().toISOString(),
     ...(includeChecks
       ? {
