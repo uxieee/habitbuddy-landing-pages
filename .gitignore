@@ -17,5 +17,8 @@ node_modules/
 docs/
 audit-screenshots/
 audit-screenshots-*/
+reports/
+tests/
+Untracked/
+.wrangler/
 /*.md
-!/README.md
