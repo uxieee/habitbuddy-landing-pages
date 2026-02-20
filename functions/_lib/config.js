@@ -60,6 +60,7 @@ const DEFAULTS = {
   GHL_CF_OPP_GIFTER_EMAIL: 'w4H8YyA4GiPOWVbcznXw',
   GHL_CF_OPP_WAS_GIFTED: 'cQJYSdGsL3icYf9tUbOZ',
   GHL_CF_OPP_GIFT_MESSAGE: 'QlQy70D3GiL6vTyjj2ma',
+  GHL_GIFT_CONTACT_ASSOCIATION_KEY: '6998bf20511ebcb82cba7cc2',
 };
 
 function readEnv(env, key) {

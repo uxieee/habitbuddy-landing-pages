@@ -229,11 +229,19 @@ export function isRelationNotFoundError(error) {
 
 export async function ensureGiftContactAssociation(env) {
   const config = getConfig(env, { url: 'https://example.com' });
-  const key = config.giftContactAssociationKey;
+  const key = String(config.giftContactAssociationKey || '').trim();
   if (!key) return null;
 
+  const normalizedKey = key.toLowerCase();
+  const matchesConfiguredAssociation = (item) => {
+    if (!item) return false;
+    const id = String(item.id || '').trim();
+    const associationKey = String(item.key || '').trim().toLowerCase();
+    return id === key || associationKey === normalizedKey;
+  };
+
   const associations = await listAssociations(env);
-  const exists = associations.find((item) => item?.id === key);
+  const exists = associations.find((item) => matchesConfiguredAssociation(item));
   if (exists) return exists;
 
   try {
@@ -252,5 +260,5 @@ export async function ensureGiftContactAssociation(env) {
   }
 
   const updated = await listAssociations(env);
-  return updated.find((item) => item?.id === key) || null;
+  return updated.find((item) => matchesConfiguredAssociation(item)) || null;
 }
