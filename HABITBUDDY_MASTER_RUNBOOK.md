@@ -13,7 +13,7 @@ This is the single source of truth for:
 ## 1) What You Need To Do Right Now
 
 1. In Cloudflare Pages, set all required env vars (Section 5).
-2. Set `GHL_CF_OPP_GIFT_MESSAGE` to your GoHighLevel opportunity custom field ID for "Gift Message" (`QlQy70D3GiL6vTyjj2ma` for location `3ouY0YkB0fLDFs5nb8UG`).
+2. Optional but recommended: set `GHL_CF_OPP_GIFT_MESSAGE` to your GoHighLevel opportunity custom field ID for "Gift Message" (`QlQy70D3GiL6vTyjj2ma` for location `3ouY0YkB0fLDFs5nb8UG`).
 3. Configure Stripe webhook events and secret for the same mode as `HB_PAYMENTS_MODE` (Section 7).
 4. Deploy.
 5. Run the post-deploy checklist (Section 10).
@@ -97,7 +97,6 @@ Use `.dev.vars.example` as template.
 - `STRIPE_MAIN_TRIAL_PRICE_ID_LIVE`
 - `STRIPE_GIFT_1M_PRICE_ID_LIVE`
 - `STRIPE_GIFT_3M_PRICE_ID_LIVE`
-- `GHL_CF_OPP_GIFT_MESSAGE` (new GHL opportunity custom field ID for gift message; current value: `QlQy70D3GiL6vTyjj2ma`)
 
 ### Required for security hardening
 - `TURNSTILE_SITE_KEY`
@@ -115,6 +114,7 @@ Use `.dev.vars.example` as template.
 - `STRIPE_GIFT_6M_PRICE_ID_TEST` and `STRIPE_GIFT_6M_PRICE_ID_LIVE` (if 6-month gift enabled)
 - `GHL_STAGE_SIX_MONTH_PASS_ID` (override only; default exists in code)
 - `GHL_GIFT_CONTACT_ASSOCIATION_KEY` (if you want explicit contact-to-contact gifter/recipient link)
+- `GHL_CF_OPP_GIFT_MESSAGE` (recommended explicit override; fallback default in code is `QlQy70D3GiL6vTyjj2ma`)
 - `HB_PLAN_CATALOG_JSON_TEST` / `HB_PLAN_CATALOG_JSON_LIVE` (advanced config-driven plan catalog)
 
 ## 6) Cloudflare Setup Steps
