@@ -162,8 +162,11 @@ export async function onRequestPost(context) {
     const parsed = unwrapError(error);
     console.error('Stripe webhook failure:', parsed.message, parsed.details || '');
 
-    // Return 200 for transient business logic failures to avoid repeated hard loops.
-    if (parsed.status >= 400 && parsed.status < 500) {
+    // Acknowledge only downstream 4xx business errors to avoid Stripe retry loops.
+    // Keep request-envelope/security failures as real HTTP errors.
+    const isRequestEnvelopeError =
+      parsed.message === 'Stripe webhook payload is too large.' || parsed.message === 'Invalid Stripe webhook payload.';
+    if (parsed.status >= 400 && parsed.status < 500 && !isRequestEnvelopeError) {
       return jsonResponse({
         success: false,
         received: true,
