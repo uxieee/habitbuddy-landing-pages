@@ -28,6 +28,7 @@ import {
 const TAGS = {
   lead: 'hb_lead',
   trialStarted: 'hb_trial_started',
+  paying: 'hb_paying',
   giftSender: 'hb_gift_sender',
   giftRecipient: 'hb_gift_recipient',
 };
@@ -905,6 +906,15 @@ function getOpportunityContactId(opportunity) {
   );
 }
 
+function getOpportunityStageId(opportunity) {
+  return cleanText(
+    opportunity?.pipelineStageId ||
+      opportunity?.pipeline_stage_id ||
+      opportunity?.pipelineStage?.id ||
+      opportunity?.pipeline_stage?.id,
+  );
+}
+
 function getOpportunityCustomFieldValue(opportunity, fieldId) {
   const normalizedFieldId = cleanText(fieldId);
   if (!normalizedFieldId) return '';
@@ -991,6 +1001,68 @@ export async function processMainCheckoutCompleted(env, session) {
   return {
     contactId,
     opportunityId,
+  };
+}
+
+export async function processMainSubscriptionLifecycleEvent(env, subscription, previousAttributes = {}) {
+  const config = getConfig(env, { url: 'https://example.com' });
+  const metadata = subscription?.metadata || {};
+  const status = cleanText(subscription?.status).toLowerCase();
+  const previousStatus = cleanText(previousAttributes?.status).toLowerCase();
+
+  let contactId = cleanText(metadata.contactId || metadata.contact_id);
+  let opportunityId = cleanText(metadata.opportunityId || metadata.opportunity_id);
+  let opportunity = null;
+
+  if (opportunityId) {
+    try {
+      opportunity = await getOpportunity(env, opportunityId);
+    } catch (_error) {
+      opportunity = null;
+    }
+  }
+
+  if (!contactId || !opportunity) {
+    const repaired = await processMainCheckoutCompleted(env, {
+      metadata,
+      customer_email: undefined,
+      customer_details: {},
+    });
+    contactId = contactId || repaired.contactId;
+    opportunityId = repaired.opportunityId || opportunityId;
+
+    if (opportunityId) {
+      try {
+        opportunity = await getOpportunity(env, opportunityId);
+      } catch (_error) {
+        opportunity = null;
+      }
+    }
+  }
+
+  let movedToPayingStage = false;
+  if (status === 'active' && opportunityId && config.stageMaxSupportPayingId) {
+    const currentStageId = getOpportunityStageId(opportunity);
+    if (currentStageId !== config.stageMaxSupportPayingId) {
+      await safeUpdateOpportunity(env, opportunityId, {
+        pipelineId: config.pipelineId,
+        pipelineStageId: config.stageMaxSupportPayingId,
+        status: 'open',
+      });
+      movedToPayingStage = true;
+    }
+
+    if (contactId) {
+      await safeAddTags(env, contactId, [TAGS.paying]);
+    }
+  }
+
+  return {
+    contactId,
+    opportunityId,
+    subscriptionStatus: status,
+    previousStatus,
+    movedToPayingStage,
   };
 }
 

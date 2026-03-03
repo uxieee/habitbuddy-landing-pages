@@ -1,5 +1,9 @@
 import { verifyStripeWebhookSignature } from '../_lib/stripe.js';
-import { processMainCheckoutCompleted, processGiftCheckoutCompleted } from '../_lib/habitbuddy.js';
+import {
+  processMainCheckoutCompleted,
+  processGiftCheckoutCompleted,
+  processMainSubscriptionLifecycleEvent,
+} from '../_lib/habitbuddy.js';
 import { getConfig, assertConfig } from '../_lib/config.js';
 import { jsonResponse, errorResponse, methodNotAllowed, optionsResponse, unwrapError } from '../_lib/http.js';
 
@@ -69,14 +73,6 @@ async function handleCheckoutEvent(env, event) {
   return { skipped: true, reason: 'unknown-flow', flow };
 }
 
-function subscriptionToSessionLike(subscription) {
-  return {
-    metadata: subscription?.metadata || {},
-    customer_email: undefined,
-    customer_details: {},
-  };
-}
-
 function paymentIntentToSessionLike(paymentIntent) {
   const metadata = paymentIntent?.metadata || {};
   const charge = paymentIntent?.latest_charge || {};
@@ -106,7 +102,8 @@ async function handleSubscriptionEvent(env, event) {
     return { skipped: true, reason: 'unknown-flow', flow };
   }
 
-  const result = await processMainCheckoutCompleted(env, subscriptionToSessionLike(subscription));
+  const previousAttributes = event?.data?.previous_attributes || {};
+  const result = await processMainSubscriptionLifecycleEvent(env, subscription, previousAttributes);
   return { flow, ...result };
 }
 
